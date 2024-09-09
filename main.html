@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Window Project</title>
+</head>
+<body>
+    <h1>Smart Window Project</h1>
+    <form method="post">
+        <button type="submit" name="button" value="send">Send Data</button>
+        <button type="submit" name="button" value="get">Get Data</button>
+    </form>
+    {% if serial_data %}
+        <p>Data from Arduino: {{ serial_data }}</p>
+    {% endif %}
+</body>
+</html>
