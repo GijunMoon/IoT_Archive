@@ -2,17 +2,73 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Window Project</title>
+    <title>Smart Window</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        .dust-box-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .dust-box {
+            width: 60px;
+            height: 60px;
+            background-color: lightgrey;
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <h1>Smart Window Project</h1>
-    <form method="post">
-        <button type="submit" name="button" value="send">Send Data</button>
-        <button type="submit" name="button" value="get">Get Data</button>
-    </form>
-    {% if serial_data %}
-        <p>Data from Arduino: {{ serial_data }}</p>
-    {% endif %}
+    <div class="container">
+        <h2>현재 환경 모니터</h2>
+        <div>
+            <!-- 설정값 표시 -->
+            <div><strong>습도: </strong><span id="humidity">50%</span></div>
+            <div><strong>더운 온도: </strong><span id="hot_temperature">30°C</span></div>
+            <div><strong>추운 온도: </strong><span id="cold_temperature">18°C</span></div>
+            <div><strong>실내 조도: </strong><span id="indoor_light">300lux</span></div>
+        </div>
+        <div>
+            <!-- 미세먼지 수치 박스 -->
+            <div><strong>미세먼지 수치:</strong></div>
+            <div class="dust-box-container">
+                <div class="dust-box">매우 좋음</div>
+                <div class="dust-box">보통</div>
+                <div class="dust-box">나쁨</div>
+                <div class="dust-box">매우 나쁨</div>
+            </div>
+        </div>
+
+        <!-- 설정 이동 버튼 -->
+        <div>
+            <p>값을 설정하시겠습니까?</p>
+            <form method="POST">
+                <button type="submit" name="button" value="Y">Y</button>
+                <button type="submit" name="button" value="N">N</button>
+            </form>
+        </div>
+
+        <!-- 시리얼 모니터 출력 -->
+        <div>
+            <h2>시리얼 모니터 출력</h2>
+            <textarea rows="10" cols="50" readonly>{{ serial_data }}</textarea>
+        </div>
+    </div>
 </body>
 </html>
