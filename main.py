@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 import serial
 import time
 
@@ -25,37 +25,63 @@ def index():
     if request.method == 'POST':
         button_action = request.form.get('button')
         if button_action == 'Y':
-            return render_template('settings.html')
+            return render_template('setting.html')
         elif button_action == 'N':
             serial_data = serial_read()
             return render_template('main.html', serial_data=serial_data)
-    return render_template('main.html')
+    # Fetch updated settings from query parameters if present
+    updated_settings = {
+        'humidity': request.args.get('humidity', ''),
+        'hot_temperature': request.args.get('hot_temperature', ''),
+        'cold_temperature': request.args.get('cold_temperature', ''),
+        'indoor_light': request.args.get('indoor_light', ''),
+        'pm': request.args.get('pm', '')
+    }
+    return render_template('main.html', updated_settings=updated_settings)
 
 @app.route('/settings', methods=['POST'])
 def settings():
-    if request.method == 'POST':
-        humidity = request.form.get('humidity')
-        hot_temperature = request.form.get('hot_temperature')
-        cold_temperature = request.form.get('cold_temperature')
-        indoor_light = request.form.get('indoor_light')
-        pm = request.form.get('pm')
+    # Collect settings from form
+    humidity = request.form.get('humidity')
+    hot_temperature = request.form.get('hot_temperature')
+    cold_temperature = request.form.get('cold_temperature')
+    indoor_light = request.form.get('indoor_light')
+    pm = request.form.get('pm')
 
-        serial_write(data='y')
+    # Debug prints to check received values
+    print(f"Received settings - Humidity: {humidity}, Hot Temp: {hot_temperature}, Cold Temp: {cold_temperature}, Indoor Light: {indoor_light}, PM: {pm}")
 
-        # Arduino에 설정값 전송
-        settings_data = f"H:{humidity},T_H:{hot_temperature},T_C:{cold_temperature},L:{indoor_light},PM:{pm}"
-        time.sleep(1.5)
-        serial_write(data=humidity)
-        time.sleep(1.5)
-        serial_write(data=hot_temperature)
-        time.sleep(1.5)
-        serial_write(data=cold_temperature)
-        time.sleep(1.5)
-        serial_write(data=indoor_light)
-        time.sleep(1.5)
-        serial_write(data=pm)
-        time.sleep(0.5)
-        return render_template('main.html', serial_data=f"Settings updated: {settings_data}")
+    # Write to Arduino if needed
+    serial_write(data='y')
+
+    # Send settings to Arduino
+    settings_data = f"H:{humidity},T_H:{hot_temperature},T_C:{cold_temperature},L:{indoor_light},PM:{pm}"
+    time.sleep(1.5)
+    serial_write(data=humidity)
+    time.sleep(1.5)
+    serial_write(data=hot_temperature)
+    time.sleep(1.5)
+    serial_write(data=cold_temperature)
+    time.sleep(1.5)
+    serial_write(data=indoor_light)
+    time.sleep(1.5)
+    serial_write(data=pm)
+    time.sleep(0.5)
+
+    # Prepare updated settings for main.html
+    updated_settings = {
+        'humidity': humidity,
+        'hot_temperature': hot_temperature,
+        'cold_temperature': cold_temperature,
+        'indoor_light': indoor_light,
+        'pm': pm
+    }
+
+    # Debug print to check if settings are prepared correctly
+    print(f"Updated settings - {updated_settings}")
+
+    # Redirect to index route with updated settings as query parameters
+    return redirect(url_for('index', **updated_settings))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
