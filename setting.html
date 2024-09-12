@@ -23,13 +23,29 @@
         }
         .dust-button {
             margin: 5px;
+            cursor: pointer;
+        }
+        .selected {
+            background-color: #e0e0e0;
         }
     </style>
+    <script>
+        function selectDustLevel(level) {
+            document.getElementById('pm').value = level;
+            // Remove selected class from all dust buttons
+            var buttons = document.querySelectorAll('.dust-button');
+            buttons.forEach(function(button) {
+                button.classList.remove('selected');
+            });
+            // Add selected class to the clicked button
+            document.getElementById('dust-btn-' + level).classList.add('selected');
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>환경 설정 변경</h1>
-        <form method="POST">
+        <form method="POST" action="/settings">
             <div>
                 <label for="humidity"><strong>습도 설정:</strong></label>
                 <input type="number" name="humidity" id="humidity" min="0" max="100">%
@@ -49,11 +65,12 @@
             <div>
                 <label><strong>미세먼지 농도 설정:</strong></label>
                 <div class="dust-button-container">
-                    <button class="dust-button" type="submit" name="pm" value="1">매우 좋음</button>
-                    <button class="dust-button" type="submit" name="pm" value="2">보통</button>
-                    <button class="dust-button" type="submit" name="pm" value="3">나쁨</button>
-                    <button class="dust-button" type="submit" name="pm" value="4">매우 나쁨</button>
+                    <button type="button" class="dust-button" id="dust-btn-1" onclick="selectDustLevel('1')">매우 좋음</button>
+                    <button type="button" class="dust-button" id="dust-btn-2" onclick="selectDustLevel('2')">보통</button>
+                    <button type="button" class="dust-button" id="dust-btn-3" onclick="selectDustLevel('3')">나쁨</button>
+                    <button type="button" class="dust-button" id="dust-btn-4" onclick="selectDustLevel('4')">매우 나쁨</button>
                 </div>
+                <input type="hidden" name="pm" id="pm" value="">
                 <label style="font-size:10px">상관없다면 '매우나쁨'을 선택하십시오.</label>
             </div>
             <button type="submit" name="button" value="save">저장</button>
