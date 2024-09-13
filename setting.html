@@ -26,7 +26,7 @@
             cursor: pointer;
         }
         .selected {
-            background-color: #e0e0e0;
+            background-color: #000000;
         }
     </style>
     <script>
@@ -65,10 +65,10 @@
             <div>
                 <label><strong>미세먼지 농도 설정:</strong></label>
                 <div class="dust-button-container">
-                    <button type="button" class="dust-button" id="dust-btn-1" onclick="selectDustLevel('1')">매우 좋음</button>
-                    <button type="button" class="dust-button" id="dust-btn-2" onclick="selectDustLevel('2')">보통</button>
-                    <button type="button" class="dust-button" id="dust-btn-3" onclick="selectDustLevel('3')">나쁨</button>
-                    <button type="button" class="dust-button" id="dust-btn-4" onclick="selectDustLevel('4')">매우 나쁨</button>
+                    <button type="button" class="dust-button" id="dust-btn-1" onclick="selectDustLevel('2')">매우 좋음</button>
+                    <button type="button" class="dust-button" id="dust-btn-2" onclick="selectDustLevel('20')">보통</button>
+                    <button type="button" class="dust-button" id="dust-btn-3" onclick="selectDustLevel('80')">나쁨</button>
+                    <button type="button" class="dust-button" id="dust-btn-4" onclick="selectDustLevel('160')">매우 나쁨</button>
                 </div>
                 <input type="hidden" name="pm" id="pm" value="">
                 <label style="font-size:10px">상관없다면 '매우나쁨'을 선택하십시오.</label>
