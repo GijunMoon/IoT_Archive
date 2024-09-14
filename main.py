@@ -21,8 +21,13 @@ sensor_data = {
     'pm2_5': 'N/A',
     'discomfort_index_1': 'N/A',
     'discomfort_index_2': 'N/A',
+    'door_status': 'door Closed',  # 문 상태 추가
     'status': ''
 }
+
+# 예약 시간 전역 변수
+open_time = None
+close_time = None
 
 def serial_read():
     """Arduino에서 데이터를 읽어와 콘솔에 출력하고 처리하는 함수."""
@@ -58,6 +63,12 @@ def process_sensor_data(data):
                 sensor_data['discomfort_index_1'] = line.split(':')[1].strip()
             elif line.startswith("Discomfort Index 2:"):
                 sensor_data['discomfort_index_2'] = line.split(':')[1].strip()
+            elif line.startswith("Door: Opened"):
+                sensor_data['door_status'] = "door Opened"
+            elif line.startswith("Door: Closed"):
+                sensor_data['door_status'] = "door Closed"
+            elif line.startswith("Door: Netural"):
+                sensor_data['door_status'] = "door Netural"
             elif "comfortable" in line or "good" in line or "Rain" in line or "Dark" in line:
                 sensor_data['status'] = line
     except Exception as e:
@@ -77,6 +88,7 @@ def index():
             return render_template('setting.html')
         elif button_action == 'N':
             return render_template('main.html')
+    
     updated_settings = {
         'humidity': request.args.get('humidity', ''),
         'hot_temperature': request.args.get('hot_temperature', ''),
@@ -88,17 +100,22 @@ def index():
 
 @app.route('/settings', methods=['POST'])
 def settings():
+    global open_time, close_time
+
     humidity = request.form.get('humidity')
     hot_temperature = request.form.get('hot_temperature')
     cold_temperature = request.form.get('cold_temperature')
     indoor_light = request.form.get('indoor_light')
     pm = request.form.get('pm')
-    pm25 = 0
+    
+    # 예약 시간 받기
+    open_time = request.form.get('open_time')
+    close_time = request.form.get('close_time')
 
-    print(f"Received settings - Humidity: {humidity}, Hot Temp: {hot_temperature}, Cold Temp: {cold_temperature}, Indoor Light: {indoor_light}, PM: {pm}")
+    print(f"Received settings - Humidity: {humidity}, Hot Temp: {hot_temperature}, Cold Temp: {cold_temperature}, Indoor Light: {indoor_light}, PM: {pm}, Open Time: {open_time}, Close Time: {close_time}")
 
+    # 시리얼로 설정 값 보내기
     serial_write(data='y')
-    settings_data = f"H:{humidity},T_H:{hot_temperature},T_C:{cold_temperature},L:{indoor_light},PM:{pm}"
     time.sleep(1.5)
     serial_write(data=humidity)
     time.sleep(1.5)
@@ -106,18 +123,12 @@ def settings():
     time.sleep(1.5)
     serial_write(data=cold_temperature)
     time.sleep(1.5)
-
-    if (int(pm) >= 0):
-        pm25 = 20
-    elif (int(pm) >= 20):
-        pm25 = 50
-    elif (int(pm) >= 80):
-        pm25 = 100
-    elif (int(pm) >= 160):
-        pm25 = 160
     
+    # PM 값에 따른 PM2.5 범위 전송
+    pm25 = calculate_pm25(int(pm))
     serial_write(data=str(pm25))
     time.sleep(1.5)
+
     serial_write(data=indoor_light)
     time.sleep(1.5)
 
@@ -126,12 +137,24 @@ def settings():
         'hot_temperature': hot_temperature,
         'cold_temperature': cold_temperature,
         'indoor_light': indoor_light,
-        'pm': pm
+        'pm': pm,
+        'open_time': open_time,
+        'close_time': close_time
     }
 
     print(f"Updated settings - {updated_settings}")
-
     return redirect(url_for('index', **updated_settings))
+
+def calculate_pm25(pm):
+    """PM 값을 기준으로 PM2.5 범위를 계산."""
+    if pm < 20:
+        return 20
+    elif pm < 80:
+        return 50
+    elif pm < 160:
+        return 100
+    else:
+        return 160
 
 def serial_write(data=None):
     """Arduino로 데이터를 전송하는 함수."""
@@ -144,5 +167,31 @@ def get_sensor_data():
     """현재 메모리에 저장된 센서 데이터를 반환하는 엔드포인트."""
     return jsonify(sensor_data)
 
+def check_reservation_times():
+    """예약된 시간에 맞춰 창문을 여닫는 함수."""
+    global open_time, close_time
+    current_time = time.strftime("%H:%M")
+    
+    if open_time and current_time == open_time:
+        # PDLC 창문 열기
+        print(f"PDLC 창문을 {open_time}에 열었습니다.")
+        serial_write(data="3")
+
+    if close_time and current_time == close_time:
+        # PDLC 창문 닫기
+        print(f"PDLC 창문을 {close_time}에 닫았습니다.")
+        serial_write(data="4")
+
+# 주기적으로 예약 확인
+def periodic_check():
+    while True:
+        check_reservation_times()
+        time.sleep(60)  # 1분 간격으로 예약 시간 확인
+
 if __name__ == '__main__':
+    # 예약 확인을 위한 백그라운드 작업 시작
+    reservation_thread = threading.Thread(target=periodic_check)
+    reservation_thread.start()
+
+    # Flask 서버 실행
     app.run(host='0.0.0.0')
