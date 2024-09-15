@@ -2,10 +2,19 @@ from flask import Flask, request, render_template, redirect, url_for, jsonify
 import serial
 import threading
 import time
+import actuator #액추에이터 컨트롤 코드
 
 SERIAL_PORT = 'COM20'
 BAUD_RATE = 9600
 TIMEOUT = 1
+
+# 모터 상태
+STOP  = 0
+OPEN  = 1
+CLOSE = 2
+
+# 모터 채널
+CH1 = 0
 
 # 시리얼 포트를 전역적으로 엽니다.
 ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=TIMEOUT)
@@ -82,12 +91,28 @@ app = Flask(__name__, template_folder='templates')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    global sensor_data
+
     if request.method == 'POST':
         button_action = request.form.get('button')
         if button_action == 'Y':
             return render_template('setting.html')
         elif button_action == 'N':
             return render_template('main.html')
+        elif button_action == 'OPEN':
+            serial_write(data='0')
+            actuator.setMotor(CH1, 100, OPEN)
+            time.sleep(8)
+            serial_write(data='1')
+            #serial_write(data='door Opened')
+            sensor_data['door_status'] = "door Opened"
+        elif button_action == 'CLOSE':
+            serial_write(data='0')
+            actuator.setMotor(CH1, 100, CLOSE)
+            time.sleep(8)
+            serial_write(data='1')
+            #serial_write(data='door Closed')
+            sensor_data['door_status'] = "door Closed"
     
     updated_settings = {
         'humidity': request.args.get('humidity', ''),
