@@ -1,0 +1,13 @@
+            <br>
+            </br>
+            <form id="upload3" action="/cam_post" method="GET" enctype="multipart/form-data">
+
+                <input type="submit" value="실시간 예측 결과">
+                {% if ml_label3 %}
+                    <span class="result">
+                        {{ ml_label3 }}
+                    </span>
+                {% endif %}
+            </form>
+            <br>
+            </br>

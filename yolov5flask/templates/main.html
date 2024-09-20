@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Window</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        .dust-box-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .dust-box {
+            width: 60px;
+            height: 60px;
+            background-color: lightgrey;
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            border: 2px solid transparent;
+        }
+        .highlight {
+            border-color: black;
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>현재 환경 모니터</h2>
+        <div>
+            <!-- Display updated settings -->
+            <div><strong>습도: </strong><span id="humidity">{{ updated_settings['humidity'] if updated_settings else '50%' }}</span></div>
+            <div><strong>더운 온도: </strong><span id="hot_temperature">{{ updated_settings['hot_temperature'] if updated_settings else '30°C' }}</span></div>
+            <div><strong>추운 온도: </strong><span id="cold_temperature">{{ updated_settings['cold_temperature'] if updated_settings else '18°C' }}</span></div>
+            <div><strong>실내 조도: </strong><span id="indoor_light">{{ updated_settings['indoor_light'] if updated_settings else '300lux' }}</span></div>
+        </div>
+        <div>
+            <!-- PM Dust Boxes -->
+            <div><strong>미세먼지 수치:</strong></div>
+            <div class="dust-box-container">
+                <div class="dust-box {{ 'highlight' if updated_settings and updated_settings['pm'] == '1' else '' }}">매우 좋음</div>
+                <div class="dust-box {{ 'highlight' if updated_settings and updated_settings['pm'] == '2' else '' }}">보통</div>
+                <div class="dust-box {{ 'highlight' if updated_settings and updated_settings['pm'] == '3' else '' }}">나쁨</div>
+                <div class="dust-box {{ 'highlight' if updated_settings and updated_settings['pm'] == '4' else '' }}">매우 나쁨</div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div>
+            <p>값을 설정하시겠습니까?</p>
+            <form method="POST">
+                <button type="submit" name="button" value="Y">Y</button>
+                <button type="submit" name="button" value="N">N</button>
+            </form>
+        </div>
+
+        <!-- Serial Monitor Output -->
+        <div>
+            <h2>시리얼 모니터 출력</h2>
+            <textarea rows="10" cols="50" readonly>{{ serial_data }}</textarea>
+        </div>
+    </div>
+</body>
+</html>
