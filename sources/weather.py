@@ -9,6 +9,7 @@
 import requests
 from datetime import datetime
 import xmltodict
+import apikeys #api키 보안처리 {변경금지}
 
 def get_current_date_string():
     current_date = datetime.now().date()
@@ -33,7 +34,7 @@ def get_current_hour_string():
 
     return base_time
 
-keys = 'DTV8LJspgr4XjXe61U/mSywY+aDhtnXI14fXReK3yiLIGQVQzvbwq0YUMMjJ1D2f/NU5plGW0ycsJmlXULfzNQ=='
+keys = apikeys.KEY
 url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst'
 params ={'serviceKey' : keys, 
          'pageNo' : '1', 
@@ -103,4 +104,4 @@ def proc_weather():
 
     return str_sky
     
-print(proc_weather())
+#print(proc_weather())

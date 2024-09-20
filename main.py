@@ -1,10 +1,14 @@
 from flask import Flask, request, render_template, redirect, url_for, jsonify
 import serial
-import threading
+import threading #비동기 작업 (타이머 새로고침)
 import time
-import actuator #액추에이터 컨트롤 코드
+import sources.actuator as actuator #액추에이터 컨트롤 코드
+import sources.weather as weather #날씨 api 코드
 
 SERIAL_PORT = 'COM20'
+## pc환경에서 test : COM 00
+## 라즈베리파이 환경에서 test : /dev/ttyACM0
+
 BAUD_RATE = 9600
 TIMEOUT = 1
 
@@ -113,6 +117,8 @@ def index():
             serial_write(data='1')
             #serial_write(data='door Closed')
             sensor_data['door_status'] = "door Closed"
+        elif button_action == "WEATHER":
+            print(weather.proc_weather())
     
     updated_settings = {
         'humidity': request.args.get('humidity', ''),
