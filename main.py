@@ -226,6 +226,15 @@ def periodic_check():
         check_reservation_times()
         time.sleep(60)  # 1분 간격으로 예약 시간 확인
 
+@app.route('/get_cam_data', methods=['GET'])
+def get_cam_data():
+    try:
+        cam_data_html = CAMdata.view_csv()
+        return jsonify({'data': cam_data_html})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+
 if __name__ == '__main__':
     # 예약 확인을 위한 백그라운드 작업 시작
     reservation_thread = threading.Thread(target=periodic_check)
