@@ -5,6 +5,7 @@ from collections import defaultdict
 from picamera2 import Picamera2
 from ultralytics import YOLO
 import time
+import threading
 
 # Picamera2 초기화 및 구성
 picam2 = Picamera2()
@@ -67,23 +68,50 @@ def process_result_and_update_csv(results, output_csv_path):
     # CSV 파일에 객체 이름, 신뢰도 점수 저장
     write_dict_to_csv(output_csv_path, current_detections)
 
-def startCAM():
-    # 스트리밍 루프
-    while True:
-        # Picamera2로부터 프레임을 읽음
-        frame = picam2.capture_array()
-        # YOLOv8 추론 실행
-        results = model(frame)
-        # 결과를 시각화하여 프레임에 표시
-        annotated_frame = results[0].plot()
-        # 객체 인식 결과를 CSV 파일에 기록
-        process_result_and_update_csv(results, csv_file_path)
-        # OpenCV로 감지된 프레임을 화면에 표시
-        cv2.imshow("Camera", annotated_frame)
-        # 'q' 키가 눌리면 스트리밍 종료
-        if cv2.waitKey(1) == ord("q"):
-            break
+# 스트리밍 제어용 플래그와 스레드 이벤트 객체
+streaming_active = False
+streaming_event = threading.Event()
 
-# 리소스 정리
-cv2.destroyAllWindows()
+def start_streaming():
+    global streaming_active
+    streaming_active = True
+    streaming_event.set()  # 이벤트 활성화하여 스레드가 실행되도록 설정
 
+    def streaming_loop():
+        while streaming_active:
+            # Picamera2로부터 프레임을 읽음
+            frame = picam2.capture_array()
+            # YOLOv8 추론 실행
+            results = model(frame)
+            # 결과를 시각화하여 프레임에 표시
+            annotated_frame = results[0].plot()
+            # 객체 인식 결과를 CSV 파일에 기록
+            process_result_and_update_csv(results, csv_file_path)
+            # OpenCV로 감지된 프레임을 화면에 표시
+            cv2.imshow("Camera", annotated_frame)
+            # 'q' 키가 눌리면 스트리밍 종료
+            if cv2.waitKey(1) == ord("q"):
+                stop_streaming()
+                break
+
+    # 스트리밍 루프를 스레드로 시작
+    threading.Thread(target=streaming_loop).start()
+
+def stop_streaming():
+    global streaming_active
+    streaming_active = False
+    streaming_event.clear()  # 이벤트 비활성화하여 스레드가 멈추도록 설정
+    cv2.destroyAllWindows()
+
+# 스트리밍 시작
+start_streaming()
+
+# 'q' 키를 누르면 스트리밍 중지
+while True:
+    key = cv2.waitKey(1)
+    if key == ord('q'):
+        stop_streaming()
+        break
+    elif key == ord('s'):  # 's' 키를 누르면 스트리밍 다시 시작
+        if not streaming_active:
+            start_streaming()
