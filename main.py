@@ -4,6 +4,9 @@ import threading #비동기 작업 (타이머 새로고침)
 import time
 import sources.actuator as actuator #액추에이터 컨트롤 코드
 import sources.weather as weather #날씨 api 코드
+#카메라 및 YOLO
+import sources.read_csv as CAMdata
+import sources.write_csv as CAMwrite
 
 SERIAL_PORT = 'COM20'
 ## pc환경에서 test : COM 00
@@ -117,8 +120,12 @@ def index():
             serial_write(data='1')
             #serial_write(data='door Closed')
             sensor_data['door_status'] = "door Closed"
-        elif button_action == "WEATHER":
+        elif button_action == 'WEATHER':
             print(weather.proc_weather())
+        elif button_action == 'CAMdata':
+            print(CAMdata.view_csv())
+        elif button_action == 'CAMwrite':
+            CAMwrite.startCAM()
     
     updated_settings = {
         'humidity': request.args.get('humidity', ''),
