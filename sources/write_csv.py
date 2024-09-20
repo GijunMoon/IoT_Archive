@@ -15,7 +15,7 @@ picam2.configure("preview")
 picam2.start()
 
 # YOLOv8 모델 로드
-model = YOLO("best (3).pt")
+model = YOLO("/home/user/pienv/myflask/flask/yolov5flask/sources/best (3).pt")
 
 # CSV 파일 경로 설정
 csv_file_path = 'detections.csv'
@@ -68,22 +68,19 @@ def process_result_and_update_csv(results, output_csv_path):
     write_dict_to_csv(output_csv_path, current_detections)
 
 def startCAM():
-    # 스트리밍 루프
     while True:
-        # Picamera2로부터 프레임을 읽음
         frame = picam2.capture_array()
-        # YOLOv8 추론 실행
         results = model(frame)
-        # 결과를 시각화하여 프레임에 표시
         annotated_frame = results[0].plot()
-        # 객체 인식 결과를 CSV 파일에 기록
+        
+        # Record detections
         process_result_and_update_csv(results, csv_file_path)
-        # OpenCV로 감지된 프레임을 화면에 표시
-        cv2.imshow("Camera", annotated_frame)
-        # 'q' 키가 눌리면 스트리밍 종료
-        if cv2.waitKey(1) == ord("q"):
-            break
+
+        # Encode the frame to JPEG
+        _, jpeg = cv2.imencode('.jpg', annotated_frame)
+
+        yield jpeg.tobytes()  # Yield byte data for the frame
+
 
 # 리소스 정리
-cv2.destroyAllWindows()
-
+#cv2.destroyAllWindows()
