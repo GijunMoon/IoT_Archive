@@ -115,12 +115,12 @@
         }
 
         function updateInitialValues() {
-            document.getElementById('humidity_1').textContent = '{{ updated_settings["humidity"] if updated_settings else "N/A" }}';
-            document.getElementById('temperature_1').textContent = '{{ updated_settings["hot_temperature"] if updated_settings else "N/A" }}';
-            document.getElementById('humidity_2').textContent = '{{ updated_settings["humidity"] if updated_settings else "N/A" }}'; // Assuming same value for demonstration
-            document.getElementById('temperature_2').textContent = '{{ updated_settings["cold_temperature"] if updated_settings else "N/A" }}';
-            document.getElementById('light_level').textContent = '{{ updated_settings["indoor_light"] if updated_settings else "N/A" }}';
-            document.getElementById('pm2_5').textContent = '{{ updated_settings["pm"] if updated_settings else "N/A" }}';
+            document.getElementById('humidity_1').textContent = '{{ updated_settings["humidity"] if updated_settings else "50.0" }}';
+            document.getElementById('temperature_1').textContent = '{{ updated_settings["hot_temperature"] if updated_settings else "26.0" }}';
+            document.getElementById('humidity_2').textContent = '{{ updated_settings["humidity"] if updated_settings else "N/A" }}'; // 실내,실외 구분 요망
+            document.getElementById('temperature_2').textContent = '{{ updated_settings["cold_temperature"] if updated_settings else "24.0" }}';
+            document.getElementById('light_level').textContent = '{{ updated_settings["indoor_light"] if updated_settings else "400" }}';
+            document.getElementById('pm2_5').textContent = '{{ updated_settings["pm"] if updated_settings else "81" }}';
         }
 
         document.addEventListener('DOMContentLoaded', initializePage);
