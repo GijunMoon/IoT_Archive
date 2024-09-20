@@ -125,9 +125,7 @@ def index():
         elif button_action == 'CAMdata':
             print(CAMdata.view_csv())
         elif button_action == 'CAMwrite':
-            CAMwrite.start_streaming()
-        elif button_action == 'CAMstop':
-            CAMwrite.stop_streaming()
+            CAMwrite.startCAM()
     
     updated_settings = {
         'humidity': request.args.get('humidity', ''),
