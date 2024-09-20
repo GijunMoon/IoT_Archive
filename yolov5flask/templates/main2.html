@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Main Page</h1>
+        {% if serial_data %}
+            <p>Serial Data: {{ serial_data }}</p>
+        {% endif %}
+        {% if updated_settings %}
+            <p>Updated Settings:</p>
+            <ul>
+                {% for key, value in updated_settings.items() %}
+                    <li>{{ key }}: {{ value }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <form method="post">
+            <button type="submit" name="button" value="Y" class="btn btn-success">Go to Settings</button>
+            <button type="submit" name="button" value="N" class="btn btn-info">Read Serial Data</button>
+        </form>
+        <a href="{{ url_for('view_csv') }}" class="btn btn-primary mt-3">View CSV Data</a>
+    </div>
+</body>
+</html>
