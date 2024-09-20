@@ -28,13 +28,13 @@ ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=TIMEOUT)
 
 # 전역 변수로 센서 데이터를 저장하기 위한 딕셔너리
 sensor_data = {
-    'humidity_1': 'N/A',
-    'temperature_1': 'N/A',
+    'humidity_1': '50.0',
+    'temperature_1': '26',
     'humidity_2': 'N/A',
-    'temperature_2': 'N/A',
-    'light_level': 'N/A',
+    'temperature_2': '24.0',
+    'light_level': '400',
     'rain_level': 'N/A',
-    'pm2_5': 'N/A',
+    'pm2_5': '81',
     'discomfort_index_1': 'N/A',
     'discomfort_index_2': 'N/A',
     'door_status': 'door Closed',  # 문 상태 추가
