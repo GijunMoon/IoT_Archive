@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for, jsonify
+from flask import Flask, request, render_template, redirect, url_for, jsonify, Response
 import serial
 import threading #비동기 작업 (타이머 새로고침)
 import time
@@ -8,7 +8,7 @@ import sources.weather as weather #날씨 api 코드
 import sources.read_csv as CAMdata
 import sources.write_csv as CAMwrite
 
-SERIAL_PORT = 'COM20'
+SERIAL_PORT = '/dev/ttyACM0'
 ## pc환경에서 test : COM 00
 ## 라즈베리파이 환경에서 test : /dev/ttyACM0
 
@@ -233,6 +233,12 @@ def get_cam_data():
         return jsonify({'data': cam_data_html})
     except Exception as e:
         return jsonify({'error': str(e)})
+        
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(CAMwrite.startCAM(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 
 if __name__ == '__main__':
