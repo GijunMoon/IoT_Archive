@@ -121,21 +121,6 @@
             document.getElementById('temperature_2').textContent = '{{ updated_settings["cold_temperature"] if updated_settings else "24.0" }}';
             document.getElementById('light_level').textContent = '{{ updated_settings["indoor_light"] if updated_settings else "400" }}';
             document.getElementById('pm2_5').textContent = '{{ updated_settings["pm"] if updated_settings else "81" }}';
-
-            // Update PM2.5 boxes
-            var pmValue = parseInt(data.pm2_5, 10);
-            document.querySelectorAll('.dust-box').forEach(box => {
-                box.classList.remove('highlight');
-            });
-            if (pmValue < 30) {
-                document.getElementById('dust-btn-1').classList.add('highlight');
-            } else if (pmValue >= 50 && pmValue < 80) {
-                document.getElementById('dust-btn-2').classList.add('highlight');
-            } else if (pmValue >= 80 && pmValue < 150) {
-                document.getElementById('dust-btn-3').classList.add('highlight');
-            } else if (pmValue >= 150) {
-                document.getElementById('dust-btn-4').classList.add('highlight');
-            }
         }
 
         document.addEventListener('DOMContentLoaded', initializePage);
@@ -221,10 +206,12 @@
                 <button type="submit" name="button" value="CAMwrite">인식 시작</button>
             </form>
         </div>
-
+        
         <div id="camera-data-container">
             <!--카메라 정보-->
         </div>
+        
+        <img src="{{ url_for('video_feed') }}" alt="Video Feed">
     </div>
 </body>
 </html>
