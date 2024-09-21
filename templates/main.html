@@ -229,6 +229,30 @@
                 })
                 .catch(error => console.error('Error fetching weather data:', error));
         }
+
+        function sendAction(action) {
+            fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    'button': action
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(`${action} action was successful`);
+                    // Optionally, update the UI or provide user feedback
+                } else {
+                    console.error(`Failed to perform ${action} action`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
     </script>
 </head>
 <body>
