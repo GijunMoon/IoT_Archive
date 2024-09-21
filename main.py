@@ -124,6 +124,8 @@ def index():
             return jsonify(weather_data)
         elif button_action == 'CAMdata':
             print(CAMdata.view_csv())
+            cam_data = CAMdata.view_csv()
+            return jsonify(cam_data)
         elif button_action == 'CAMwrite':
             CAMwrite.startCAM()
         
@@ -251,7 +253,7 @@ def video_feed():
 @app.route('/get_cam_detect_data')
 def detect_data():
     data = CAMdata.view_csv()
-    return data
+    return jsonify(data)
 
 if __name__ == '__main__':
     # 예약 확인을 위한 백그라운드 작업 시작
