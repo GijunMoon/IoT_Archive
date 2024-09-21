@@ -230,6 +230,15 @@
                 .catch(error => console.error('Error fetching weather data:', error));
         }
 
+        function updateCAMData() {
+            fetch('/get_cam_detect_data')
+                .then(data => {
+                    document.getElementById('camera-data-containe') = data;
+                })
+                .catch(error => console.error('Error fetching detect data:', error));
+        }
+
+
         function sendAction(action) {
             fetch('/', {
                 method: 'POST',
@@ -245,6 +254,12 @@
                 if (data.success) {
                     console.log(`${action} action was successful`);
                     // Optionally, update the UI or provide user feedback
+                    if (action === 'WEATHER') {
+                        updateWeatherData();
+                    }
+                    else if (action === 'CAMdata'){
+                        updateCAMData();
+                    }
                 } else {
                     console.error(`Failed to perform ${action} action`);
                 }

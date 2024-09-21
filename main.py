@@ -119,8 +119,9 @@ def index():
             serial_write(data='1')
             sensor_data['door_status'] = "door Closed"
         elif button_action == 'WEATHER':
-            get_weather_data(weather.proc_weather())
-            #print(weather.proc_weather())
+            weather_data = weather.proc_weather()
+            print(weather_data)
+            return jsonify(weather_data)
         elif button_action == 'CAMdata':
             print(CAMdata.view_csv())
         elif button_action == 'CAMwrite':
@@ -204,8 +205,9 @@ def serial_write(data=None):
         ser.write(data.encode())
 
 @app.route('/get_weather_data', methods=['GET'])
-def get_weather_data(data):
-    return jsonify(data)
+def get_weather_data():
+    weather_data = weather.proc_weather()
+    return jsonify(weather_data)
 
 @app.route('/get_sensor_data', methods=['GET'])
 def get_sensor_data():
@@ -245,6 +247,11 @@ def gen(camera):
 def video_feed():
     return Response(gen(CAMwrite.VideoCamera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/get_cam_detect_data')
+def detect_data():
+    data = CAMdata.view_csv()
+    return data
 
 if __name__ == '__main__':
     # 예약 확인을 위한 백그라운드 작업 시작
