@@ -6,7 +6,7 @@ import sources.actuator as actuator #액추에이터 컨트롤 코드
 import sources.weather as weather #날씨 api 코드
 #카메라 및 YOLO
 import sources.read_csv as CAMdata
-import sources.write_csv as CAMwrite
+import sources.camera as CAMwrite
 
 SERIAL_PORT = '/dev/ttyACM0'
 ## pc환경에서 test : COM 00
@@ -111,14 +111,12 @@ def index():
             actuator.setMotor(CH1, 100, OPEN)
             time.sleep(8)
             serial_write(data='1')
-            #serial_write(data='door Opened')
             sensor_data['door_status'] = "door Opened"
         elif button_action == 'CLOSE':
             serial_write(data='0')
             actuator.setMotor(CH1, 100, CLOSE)
             time.sleep(8)
             serial_write(data='1')
-            #serial_write(data='door Closed')
             sensor_data['door_status'] = "door Closed"
         elif button_action == 'WEATHER':
             print(weather.proc_weather())
@@ -126,7 +124,10 @@ def index():
             print(CAMdata.view_csv())
         elif button_action == 'CAMwrite':
             CAMwrite.startCAM()
-    
+        
+        # 이 부분에서 JSON 응답을 보내거나 필요한 작업을 수행합니다.
+        return jsonify(success=True)  # AJAX 요청을 위한 응답
+
     updated_settings = {
         'humidity': request.args.get('humidity', ''),
         'hot_temperature': request.args.get('hot_temperature', ''),
@@ -135,6 +136,7 @@ def index():
         'pm': request.args.get('pm', '')
     }
     return render_template('main.html', updated_settings=updated_settings)
+
 
 @app.route('/settings', methods=['POST'])
 def settings():
@@ -226,20 +228,18 @@ def periodic_check():
         check_reservation_times()
         time.sleep(60)  # 1분 간격으로 예약 시간 확인
 
-@app.route('/get_cam_data', methods=['GET'])
-def get_cam_data():
-    try:
-        cam_data_html = CAMdata.view_csv()
-        return jsonify({'data': cam_data_html})
-    except Exception as e:
-        return jsonify({'error': str(e)})
-        
+def gen(camera):
+    while True:
+        frame = camera.get_frame()
+        if frame is None:  # Check if the frame is valid
+            continue
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(CAMwrite.startCAM(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
+    return Response(gen(CAMwrite.VideoCamera()),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     # 예약 확인을 위한 백그라운드 작업 시작
