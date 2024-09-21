@@ -119,7 +119,8 @@ def index():
             serial_write(data='1')
             sensor_data['door_status'] = "door Closed"
         elif button_action == 'WEATHER':
-            print(weather.proc_weather())
+            get_weather_data(weather.proc_weather())
+            #print(weather.proc_weather())
         elif button_action == 'CAMdata':
             print(CAMdata.view_csv())
         elif button_action == 'CAMwrite':
@@ -201,6 +202,10 @@ def serial_write(data=None):
     if data is not None:
         print(f"Arduino로 전송: {data}")
         ser.write(data.encode())
+
+@app.route('/get_weather_data', methods=['GET'])
+def get_weather_data(data):
+    return jsonify(data)
 
 @app.route('/get_sensor_data', methods=['GET'])
 def get_sensor_data():
