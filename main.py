@@ -250,7 +250,7 @@ def video_feed():
     return Response(gen(CAMwrite.VideoCamera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/get_cam_detect_data')
+@app.route('/get_cam_data')
 def detect_data():
     data = CAMdata.view_csv()
     return jsonify(data)
