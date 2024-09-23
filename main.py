@@ -253,7 +253,7 @@ def video_feed():
 @app.route('/get_cam_data')
 def detect_data():
     data = CAMdata.view_csv()
-    return jsonify(data)
+    return data
 
 if __name__ == '__main__':
     # 예약 확인을 위한 백그라운드 작업 시작
