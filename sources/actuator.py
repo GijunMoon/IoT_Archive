@@ -1,5 +1,6 @@
+# sources/actuator.py
+
 import RPi.GPIO as GPIO
-from time import sleep
 
 # 모터 상태
 STOP  = 0
@@ -9,78 +10,66 @@ CLOSE = 2
 # 모터 채널
 CH1 = 0
 
-# PIN 입출력 설정
-OUTPUT = 1
-INPUT = 0
+# GPIO 핀 정의
+ENA = 21  # PWM 핀
+IN1 = 20  # 모터 제어 핀 1
+IN2 = 16  # 모터 제어 핀 2
 
-# PIN 설정
-HIGH = 1
-LOW = 0
+# 초기화 플래그
+gpio_initialized = False
 
-# Pi4 핀 정의
-#PWM PIN
-ENA = 21  #21 pin
+def initialize_gpio():
+    """ GPIO를 초기화하는 함수. """
+    global gpio_initialized
+    if not gpio_initialized:
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(ENA, GPIO.OUT)
+        GPIO.setup(IN1, GPIO.OUT)
+        GPIO.setup(IN2, GPIO.OUT)
+        gpio_initialized = True
 
-#GPIO PIN
-IN1 = 20  #20 pin
-IN2 = 16  #16 pin
+# 모터 핸들러
+pwm = None
 
-# 핀 설정 함수
-def setPinConfig(EN, INA, INB):        
-    GPIO.setup(EN, GPIO.OUT)
-    GPIO.setup(INA, GPIO.OUT)    
-    # 100khz 로 PWM 동작 시킴 
-    pwm = GPIO.PWM(EN, 100) 
+def setup_motor():
+    """ 모터 설정 함수. """
+    global pwm
+    if not gpio_initialized:
+        initialize_gpio()
+    pwm = GPIO.PWM(ENA, 100)  # 100Hz PWM 생성
+    pwm.start(0)  # 초기 PWM 비율 0%
 
-    # 우선 PWM 멈춤.   
-    pwm.start(0) 
-    return pwm
-
-# 모터 제어 함수
 def setMotorContorl(pwm, INA, INB, speed, stat):
+    """ 모터를 제어하는 함수 """
+    if not gpio_initialized:
+        initialize_gpio()
 
-    #모터 속도 제어 PWM
-    pwm.ChangeDutyCycle(speed)  
+    # 모터 속도 제어
+    pwm.ChangeDutyCycle(speed)
 
-    #열림
     if stat == OPEN:
-        GPIO.output(INA, HIGH)
-        GPIO.output(INB, LOW)
-
-    #닫힘
+        GPIO.output(INA, GPIO.HIGH)
+        GPIO.output(INB, GPIO.LOW)
     elif stat == CLOSE:
-        GPIO.output(INA, LOW)
-        GPIO.output(INB, HIGH)
-
-    #정지
+        GPIO.output(INA, GPIO.LOW)
+        GPIO.output(INB, GPIO.HIGH)
     elif stat == STOP:
-        GPIO.output(INA, LOW)
-        GPIO.output(INB, LOW)
+        GPIO.output(INA, GPIO.LOW)
+        GPIO.output(INB, GPIO.LOW)
 
-
-# 모터 제어함수 핸들러
 def setMotor(ch, speed, stat):
+    """ 모터 제어 핸들러 """
+    if not gpio_initialized:
+        initialize_gpio()
+
     if ch == CH1:
-        #pwmA는 핀 설정 후 pwm 핸들을 리턴 받은 값이다.
-        setMotorContorl(pwmA, IN1, IN2, speed, stat)
+        setMotorContorl(pwm, IN1, IN2, speed, stat)
 
-
-# GPIO 모드 설정 
-GPIO.setmode(GPIO.BCM)
-
-#모터 핀 설정
-#핀 설정후 PWM 핸들 얻어옴 
-pwmA = setPinConfig(ENA, IN1, IN2)
-
-
-#제어 시작
-#setMotor(CH1, 100, OPEN)
-
-#액추에이터 가동 시간 고려 (변경 가능)
-#sleep(5)
-
-#setMotor(CH1, 100, CLOSE)
-#sleep(5)
-
-# 종료
-#GPIO.cleanup()
+def cleanup_gpio():
+    """ GPIO를 정리하는 함수 """
+    global gpio_initialized
+    if gpio_initialized:
+        if pwm is not None:
+            pwm.stop()
+        GPIO.cleanup()
+        gpio_initialized = False

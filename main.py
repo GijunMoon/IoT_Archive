@@ -7,10 +7,14 @@ import sources.weather as weather #날씨 api 코드
 #카메라 및 YOLO
 import sources.read_csv as CAMdata
 import sources.camera as CAMwrite
+import atexit
 
 SERIAL_PORT = '/dev/ttyACM0'
 ## pc환경에서 test : COM 00
 ## 라즈베리파이 환경에서 test : /dev/ttyACM0
+
+# 애플리케이션 종료 시 GPIO 정리
+atexit.register(actuator.cleanup_gpio)
 
 BAUD_RATE = 9600
 TIMEOUT = 1
