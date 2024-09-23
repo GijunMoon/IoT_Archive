@@ -7,6 +7,7 @@ import sources.weather as weather #날씨 api 코드
 import sources.read_csv as CAMdata
 import sources.camera as CAMwrite
 
+
 SERIAL_PORT = '/dev/ttyACM0'
 ## pc환경에서 test : COM 00
 ## 라즈베리파이 환경에서 test : /dev/ttyACM0
@@ -107,16 +108,18 @@ def index():
         elif button_action == 'N':
             return render_template('main.html')
         elif button_action == 'OPEN':
-            serial_write(data='0')
+            serial_write(data="0")
+            time.sleep(2)
             actuator.open_a()
             time.sleep(2)
-            serial_write(data='1')
+            serial_write(data="1")
             sensor_data['door_status'] = "door Opened"
         elif button_action == 'CLOSE':
-            serial_write(data='0')
+            serial_write(data="0")
+            time.sleep(2)
             actuator.close_a()
             time.sleep(2)
-            serial_write(data='1')
+            serial_write(data="1")
             sensor_data['door_status'] = "door Closed"
         elif button_action == 'WEATHER':
             weather_data = weather.proc_weather()
