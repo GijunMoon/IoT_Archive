@@ -203,11 +203,11 @@ void printSensorReadings() {        //아두이노 센서 값 출력 함수 정�
   Serial.print(F("Light Level: "));  // 현재 조도
   Serial.println(reading, 2);        // 조도값 소수점 이하 2자리까지 출력
 
-  if (reading >= 400) {                          // 조도 값이 400 이상일 경우
+  if (reading >= 200) {                          // 조도 값이 400 이상일 경우
     Serial.println(F("Very Light"));             // "매우 밝음" 출력
-  } else if (reading >= 200 && reading < 400) {  // 조도 값이 200 이상, 400 미만일 경우
+  } else if (reading >= 20 && reading < 200) {  // 조도 값이 200 이상, 400 미만일 경우
     Serial.println(F("Normal Light"));           //"보통" 출력
-  } else if (reading < 200) {                    // 조도 값이 200 미만일 경우
+  } else if (reading < 20) {                    // 조도 값이 200 미만일 경우
     Serial.println(F("Very Dark"));              //"매우 어두움" 출력
   }
 
@@ -234,7 +234,7 @@ void printSensorReadings() {        //아두이노 센서 값 출력 함수 정�
   } else if (pm25Value >= 150) {                                // 미세먼지 값이 150 이상일 경우
     Serial.println(F("Fine dust concentration is very bad"));   //"미세먼지 상태 매우 나쁨" 출력
   }
-s
+
   float discomfortIndex1 = calculateDiscomfortIndex(temp, hum);    //실외 불쾌지수 저장
   float discomfortIndex2 = calculateDiscomfortIndex(temp2, hum2);  //실내 불쾌지수 저장
 
@@ -437,7 +437,7 @@ void loop() {                    //계속 반복
       break;                              // 서보가 위치에 도달할 때까지 15ms 대기
     }
   }
-
+}
 
 
 
