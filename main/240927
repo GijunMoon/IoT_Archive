@@ -280,8 +280,8 @@ float calculateAverage(float* arr, int length) {  //평균 값 계산 함수 정
 }
 
 // 서보 제어 함수
-void controlServoBasedOnAverage(float avgTemp1, float avgHum1, float avgTemp2, float avgHum2) {  //센서에 따른 서보 제어 함수 정의
-  float discomfortIndex1 = calculateDiscomfortIndex(avgTemp1, avgHum1);                          //실외 불쾌지수 평균 저장
+void controlServoBasedOnAverage(float avgTemp, float avgHum, float avgTemp2, float avgHum2) {  //센서에 따른 서보 제어 함수 정의
+  float discomfortIndex1 = calculateDiscomfortIndex(avgTemp, avgHum);                          //실외 불쾌지수 평균 저장
   float discomfortIndex2 = calculateDiscomfortIndex(avgTemp2, avgHum2);                          //실내 불쾌지수 평균 저장
 
   Serial.print(F("10 minute average discomfort index 1: "));  //현재 실외 불쾌지수 평균
