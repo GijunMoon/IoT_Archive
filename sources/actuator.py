@@ -1,25 +1,26 @@
-# sources/actuator.py
-
 import RPi.GPIO as GPIO
+import time
 
-# 모터 상태
-STOP  = 0
-OPEN  = 1
+# Motor states
+STOP = 0
+OPEN = 1
 CLOSE = 2
 
-# 모터 채널
+# Motor channel
 CH1 = 0
 
-# GPIO 핀 정의
-ENA = 21  # PWM 핀
-IN1 = 20  # 모터 제어 핀 1
-IN2 = 16  # 모터 제어 핀 2
+# GPIO pin definitions
+ENA = 21  # PWM pin
+IN1 = 16  # Motor control pin 1
+IN2 = 20  # Motor control pin 2
 
-# 초기화 플래그
+# Initialization flag
 gpio_initialized = False
 
+# Disable GPIO warnings
+GPIO.setwarnings(False)
+
 def initialize_gpio():
-    """ GPIO를 초기화하는 함수. """
     global gpio_initialized
     if not gpio_initialized:
         GPIO.setmode(GPIO.BCM)
@@ -28,25 +29,19 @@ def initialize_gpio():
         GPIO.setup(IN2, GPIO.OUT)
         gpio_initialized = True
 
-# 모터 핸들러
+# Motor handler
 pwm = None
 
 def setup_motor():
-    """ 모터 설정 함수. """
     global pwm
     if not gpio_initialized:
         initialize_gpio()
-    pwm = GPIO.PWM(ENA, 100)  # 100Hz PWM 생성
-    pwm.start(0)  # 초기 PWM 비율 0%
+    if pwm is None:
+        pwm = GPIO.PWM(ENA, 100)  # 100Hz PWM
+        pwm.start(0)  # Initial PWM duty cycle 0%
 
-def setMotorContorl(pwm, INA, INB, speed, stat):
-    """ 모터를 제어하는 함수 """
-    if not gpio_initialized:
-        initialize_gpio()
-
-    # 모터 속도 제어
+def setMotorControl(pwm, INA, INB, speed, stat):
     pwm.ChangeDutyCycle(speed)
-
     if stat == OPEN:
         GPIO.output(INA, GPIO.HIGH)
         GPIO.output(INB, GPIO.LOW)
@@ -58,18 +53,40 @@ def setMotorContorl(pwm, INA, INB, speed, stat):
         GPIO.output(INB, GPIO.LOW)
 
 def setMotor(ch, speed, stat):
-    """ 모터 제어 핸들러 """
     if not gpio_initialized:
         initialize_gpio()
-
     if ch == CH1:
-        setMotorContorl(pwm, IN1, IN2, speed, stat)
+        setup_motor()  # Ensure motor is set up before use
+        setMotorControl(pwm, IN1, IN2, speed, stat)
 
 def cleanup_gpio():
-    """ GPIO를 정리하는 함수 """
     global gpio_initialized
     if gpio_initialized:
         if pwm is not None:
             pwm.stop()
         GPIO.cleanup()
         gpio_initialized = False
+
+def open_a():
+    try:
+        print("Opening the door...")
+        setMotor(CH1, 100, OPEN)  # Start motor
+        time.sleep(8)  # Run for 8 seconds
+        setMotor(CH1, 0, STOP)  # Stop motor
+        print("Door opened.")
+    finally:
+        cleanup_gpio()  # Ensure cleanup happens
+
+def close_a():
+    try:
+        print("Closing the door...")
+        setMotor(CH1, 100, CLOSE)  # Start motor
+        time.sleep(8)  # Run for 8 seconds
+        setMotor(CH1, 0, STOP)  # Stop motor
+        print("Door closed.")
+    finally:
+        cleanup_gpio()  # Ensure cleanup happens
+        
+# Ensure GPIO cleanup when the program exits
+import atexit
+atexit.register(cleanup_gpio)

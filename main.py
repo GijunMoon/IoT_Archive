@@ -2,19 +2,15 @@ from flask import Flask, request, render_template, redirect, url_for, jsonify, R
 import serial
 import threading #비동기 작업 (타이머 새로고침)
 import time
-import sources.actuator as actuator #액추에이터 컨트롤 코드
 import sources.weather as weather #날씨 api 코드
 #카메라 및 YOLO
 import sources.read_csv as CAMdata
 import sources.camera as CAMwrite
-import atexit
+
 
 SERIAL_PORT = '/dev/ttyACM0'
 ## pc환경에서 test : COM 00
 ## 라즈베리파이 환경에서 test : /dev/ttyACM0
-
-# 애플리케이션 종료 시 GPIO 정리
-atexit.register(actuator.cleanup_gpio)
 
 BAUD_RATE = 9600
 TIMEOUT = 1
@@ -103,6 +99,7 @@ app = Flask(__name__, template_folder='templates')
 @app.route('/', methods=['GET', 'POST'])
 def index():
     global sensor_data
+    import sources.actuator as actuator #액추에이터 컨트롤 코드
 
     if request.method == 'POST':
         button_action = request.form.get('button')
@@ -112,16 +109,12 @@ def index():
             return render_template('main.html')
         elif button_action == 'OPEN':
             serial_write(data='0')
-
-            print("OPEN work")
             actuator.setMotor(CH1, 100, OPEN)
             time.sleep(8)
             serial_write(data='1')
             sensor_data['door_status'] = "door Opened"
         elif button_action == 'CLOSE':
             serial_write(data='0')
-
-            print("CLOSE work")
             actuator.setMotor(CH1, 100, CLOSE)
             time.sleep(8)
             serial_write(data='1')
@@ -136,6 +129,8 @@ def index():
             return jsonify(cam_data)
         elif button_action == 'CAMwrite':
             CAMwrite.startCAM()
+            
+        actuator.cleanup_gpio()
         
         # 이 부분에서 JSON 응답을 보내거나 필요한 작업을 수행합니다.
         return jsonify(success=True)  # AJAX 요청을 위한 응답
@@ -223,6 +218,11 @@ def get_weather_data():
 def get_sensor_data():
     """현재 메모리에 저장된 센서 데이터를 반환하는 엔드포인트."""
     return jsonify(sensor_data)
+    
+@app.route('/get_setting_data', methods=['GET'])
+def get_setting_data():
+    """현재 메모리에 저장된 센서 데이터를 반환하는 엔드포인트."""
+    return jsonify(sensor_data)
 
 def check_reservation_times():
     """예약된 시간에 맞춰 창문을 여닫는 함수."""
@@ -261,7 +261,7 @@ def video_feed():
 @app.route('/get_cam_data')
 def detect_data():
     data = CAMdata.view_csv()
-    return data
+    return jsonify(data)
 
 if __name__ == '__main__':
     # 예약 확인을 위한 백그라운드 작업 시작
