@@ -103,6 +103,19 @@ def process_sensor_data(data):
 thread = threading.Thread(target=serial_read, daemon=True)
 thread.start()
 
+def door_control(param):
+    if param == 'open':
+        serial_write(data='0')
+        actuator.setMotor(CH1, 100, OPEN)
+        time.sleep(8)
+        serial_write(data='1')
+    elif param == 'close':
+        serial_write(data='0')
+        actuator.setMotor(CH1, 100, CLOSE)
+        time.sleep(8)
+        serial_write(data='1')
+
+
 app = Flask(__name__, template_folder='templates')
 
 @app.route('/', methods=['GET', 'POST'])
@@ -116,17 +129,11 @@ def index():
         elif button_action == 'N':
             return render_template('main.html')
         elif button_action == 'OPEN':
-            serial_write(data='0')
-            actuator.setMotor(CH1, 100, OPEN)
-            time.sleep(8)
-            serial_write(data='1')
+            door_control('open')
             with data_lock:
                 sensor_data['door_status'] = "door Opened"
         elif button_action == 'CLOSE':
-            serial_write(data='0')
-            actuator.setMotor(CH1, 100, CLOSE)
-            time.sleep(8)
-            serial_write(data='1')
+            door_control('close')
             with data_lock:
                 sensor_data['door_status'] = "door Closed"
         elif button_action == 'WEATHER':
