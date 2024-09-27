@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import main
+import time
 
 def view_csv():    
     # CSV 파일 경로 설정
@@ -21,7 +22,7 @@ def view_csv():
         
         # 'kids' 또는 'adult'가 인식된 경우 창문을 여는 신호 전달
         if df['name'].str.contains('kids|adult').any():
-            main.door_control('open')
+            main.door_control('close')
         
         # HTML 테이블로 변환하여 웹페이지에 표시
         data = df.to_html(classes='table table-striped', index=False)
