@@ -51,6 +51,7 @@ def serial_read():
             print(f"Arduino에서 받은 데이터: {data}")
             with data_lock:
                 process_sensor_data(data)
+                process_10min(data)
 
 def process_10min(data):
     try:
