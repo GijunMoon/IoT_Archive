@@ -52,6 +52,16 @@ def serial_read():
             with data_lock:
                 process_sensor_data(data)
 
+def process_10min(data):
+    try:
+        if (data == '------------10 minutes have passed.------------'):
+            serial_write(data='0')
+            actuator.setMotor(CH1, 100, OPEN)
+            time.sleep(8)
+            serial_write(data='1')
+    except Exception as e:
+        print(f"10분 타이머 처리 오류: {e}")
+
 def process_sensor_data(data):
     """시리얼 데이터를 가공하여 전역 변수에 저장."""
     global sensor_data
