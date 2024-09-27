@@ -408,9 +408,6 @@ void loop() {                    //계속 반복
     REQUIRED!: 9600BAUD 
     솔레노이드는 전원이 내려가면 잠기고 (POP) 전원이 올라가면 열림 (DOWN) */
 
-  /*TODO: 센서 조건과 동작 명령 통합. 액추에이터 완전 작동 이후에 솔레노이드 작동 */
-  relay();
-
   if (command == "3") {  //PDLC 타이머 제어
     //open
     for (pos = 0; pos <= 65; pos += 1) {  // 0도에서 65도까지 이동
@@ -425,9 +422,7 @@ void loop() {                    //계속 반복
       break;                              // 서보가 위치에 도달할 때까지 15ms 대기
     }
   }
-}
-
-void relay(){
+  
   if (command == "1") {  // 라즈베리파이에서 명령을 받아 "1"일 경우
 
     //숫자를 문자열로 바꾸지 말 것
@@ -439,6 +434,7 @@ void relay(){
     digitalWrite(Relaypin, HIGH);  // 릴레이 핀을 HIGH로 설정하여 잠금 해제
   }
 }
+
   // 10분 평균 계산 설정 함수
   void loop_10avg() {                              //// 10분 평균 계산 및 서보 제어 함수 정의
     Serial.println(F("Calculating averages..."));  // 평균 계산 문구 출력
