@@ -112,12 +112,16 @@ def index():
             return render_template('main.html')
         elif button_action == 'OPEN':
             serial_write(data='0')
+
+            print("OPEN work")
             actuator.setMotor(CH1, 100, OPEN)
             time.sleep(8)
             serial_write(data='1')
             sensor_data['door_status'] = "door Opened"
         elif button_action == 'CLOSE':
             serial_write(data='0')
+
+            print("CLOSE work")
             actuator.setMotor(CH1, 100, CLOSE)
             time.sleep(8)
             serial_write(data='1')
