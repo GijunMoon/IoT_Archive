@@ -1,13 +1,14 @@
-from flask import Flask, request, render_template, redirect, url_for, jsonify, Response, g
+from flask import Flask, request, render_template, redirect, url_for, jsonify, Response
 import serial
 import threading
 import time
+from datetime import datetime
+from threading import Lock
 import sources.weather as weather
 import sources.read_csv as CAMdata
 import sources.camera as CAMwrite
 import sources.actuator as actuator
-from datetime import datetime
-from threading import Lock
+import sources.mse as mse
 
 SERIAL_PORT = '/dev/ttyACM0'
 BAUD_RATE = 9600
@@ -115,7 +116,6 @@ def door_control(param):
         time.sleep(8)
         serial_write(data='1')
 
-
 app = Flask(__name__, template_folder='templates')
 
 @app.route('/', methods=['GET', 'POST'])
@@ -206,6 +206,16 @@ def settings():
 
     print(f"Updated settings - {updated_settings}")
     return redirect(url_for('index', **updated_settings))
+
+@app.route('/calibrate_sensor_data', methods=['GET'])
+def get_calibrated_sensor_data():
+    external_weather = weather.fetch_external_weather()
+    
+    with data_lock:
+        calibrated_data = mse.calibrate_sensor_data(sensor_data, external_weather)
+        
+    return jsonify(calibrated_data)
+
 
 def calculate_pm25(pm):
     """PM 값을 기준으로 PM2.5 범위를 계산."""

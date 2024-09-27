@@ -161,6 +161,15 @@
             })
             .catch(error => console.error('Error fetching sensor data:', error));
         }
+
+        function updateMSEData(){
+            fetch('/calibrate_sensor_data')
+            .then(response => response.json())
+            .then(data => {
+                // Update sensor values
+                document.getElementById('humidity_1').textContent = data.humidity_1 || 'N/A';
+                document.getElementById('temperature_1').textContent = data.temperature_1 || 'N/A';})
+        }
         
         function updateSettingData() {
             fetch('/get_setting_data')
@@ -339,6 +348,11 @@
                     <div><strong>온도 2: </strong><span id="temperature_2">N/A</span></div>
                     <div><strong>조도 레벨: </strong><span id="light_level">N/A</span></div>
                     <div><strong>PM2.5 레벨: </strong><span id="pm2_5">N/A</span></div>
+                </div>
+                <div style="flex: 1;">
+                    <h3>보정 값</h3>
+                    <div><strong>외부 습도: </strong><span id="humidity_1">N/A</span></div>
+                    <div><strong>외부 온도: </strong><span id="temperature_1">N/A</span></div>
                 </div>
             </div>
             <div><strong>미세먼지 수치:</strong></div>

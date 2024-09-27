@@ -105,3 +105,14 @@ def proc_weather():
     return str_sky
     
 #print(proc_weather())
+def fetch_external_weather():
+    dict_sky = forecast()
+    try:
+        weather_data = {
+            'temperature': dict_sky['temp'],
+            'humidity': dict_sky['hum'],
+        }
+        return weather_data
+    except Exception as e:
+        print(f"Error fetching weather data: {e}")
+        return None
