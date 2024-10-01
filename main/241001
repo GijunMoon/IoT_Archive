@@ -408,30 +408,26 @@ void loop() {                    //계속 반복
     REQUIRED!: 9600BAUD 
     솔레노이드는 전원이 내려가면 잠기고 (POP) 전원이 올라가면 열림 (DOWN) */
 
-  if (command == "3") {  //PDLC 타이머 제어
-    //open
-    for (pos = 0; pos <= 65; pos += 1) {  // 0도에서 65도까지 이동
-      myservo.write(pos);                 // 서보를 'pos' 위치로 이동
-      delay(1000);                         // 서보가 위치에 도달할 때까지 15ms 대기
+  if (command == "3") {  // PDLC 타이머 제어 (open)
+    // 0도에서 65도까지 이동
+    for (pos = 0; pos <= 65; pos += 1) {
+      myservo.write(pos);  // 서보를 'pos' 위치로 이동
+      break;           // 서보가 위치에 도달할 때까지 15ms 대기
     }
-    delay(1000);
-    for (pos = 65; pos >= 0; pos -= 1) {  // 65도에서 0도까지 이동
-      myservo.write(pos);                 // 서보를 'pos' 위치로 이동
-      break;                              // 서보가 위치에 도달할 때까지 15ms 대기
-    }
+   // 1초 대기 후
 
-  } else if (command == "4") {
-    //close
-    for (pos = 65; pos >= 0; pos -= 1) {  // 65도에서 0도까지 이동
-      myservo.write(pos);                 // 서보를 'pos' 위치로 이동
-      delay(1000);                         // 서보가 위치에 도달할 때까지 15ms 대기
-    }
-    delay(1000);
-    for (pos = 0; pos <= 65; pos += 1) {  // 0도에서 65도까지 이동
-      myservo.write(pos);                 // 서보를 'pos' 위치로 이동
-      break;                              // 서보가 위치에 도달할 때까지 15ms 대기
-    }
   }
+  if (command == "4") {  // PDLC 타이머 제어 (close)
+    // 65도에서 0도까지 이동
+    for (pos = 130; pos >= 0; pos -= 1) {
+      myservo.write(pos);  // 서보를 'pos' 위치로 이동
+      break;           // 서보가 위치에 도달할 때까지 15ms 대기
+    }
+  // 0도에서 65도까지 이동
+
+  }
+
+
 
   if (command == "1") {  // 라즈베리파이에서 명령을 받아 "1"일 경우
 
@@ -476,27 +472,19 @@ void loop_10avg() {                              //// 10분 평균 계산 및 �
 
   delay(100);  //0.1초 동안 프로그램 일시 중지
   // PDLC 제어
-  if (avgLight >= 50) {                   //50보다 조도값이 크거나 같을 경우
-    for (pos = 65; pos >= 0; pos -= 1) {  // 65도에서 0도까지 이동
-      myservo.write(pos);                 // 서보를 'pos' 위치로 이동
-      delay(1000);                         // 서보가 위치에 도달할 때까지 15ms 대기
-    }
-    delay(1000);
-    for (pos = 0; pos <= 65; pos += 1) {  // 0도에서 65도까지 이동
+  if (avgLight >= 50) {                   // 조도값이 50보다 크거나 같을 경우
+    for (pos = 130; pos >= 0; pos -= 1) {  // 65도에서 0도까지 이동
       myservo.write(pos);                 // 서보를 'pos' 위치로 이동
       break;                              // 서보가 위치에 도달할 때까지 15ms 대기
     }
-  } else if {                                //50보다 조도값이 작을 경우
+
+  } else if (avgLight < 50) {             // 조도값이 50보다 작을 경우
     for (pos = 0; pos <= 65; pos += 1) {  // 0도에서 65도까지 이동
-      myservo.write(pos);                 // 서보를 'pos' 위치로 이동
-      delay(1000);                         // 서보가 위치에 도달할 때까지 15ms 대기
-    }
-    delay(1000);
-    for (pos = 65; pos >= 0; pos -= 1) {  // 65도에서 0도까지 이동
       myservo.write(pos);                 // 서보를 'pos' 위치로 이동
       break;                              // 서보가 위치에 도달할 때까지 15ms 대기
     }
   }
+
   controlServoBasedOnAverage(avgTemp, avgHum, avgTemp2, avgHum2);  // 평균 값에 따라 서보 제어
 
   currentIndex = 0;  // 인덱스 재설정을 위해 0으로 초기화
