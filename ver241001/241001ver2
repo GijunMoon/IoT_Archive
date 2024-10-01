@@ -62,7 +62,7 @@ def process_10min(data):
     global sensor_data
 
     try:
-        if data == 88888888888888888888888888:
+        if data == 8888888:
             door_status = sensor_data.get('door_status', 'Netural')
 
             if door_status == "Door Opened":
