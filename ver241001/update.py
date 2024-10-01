@@ -48,11 +48,15 @@ def serial_read():
     """Arduino에서 데이터를 읽어와 콘솔에 출력하고 처리하는 함수."""
     while True:
         if ser.in_waiting > 0:
-            data = ser.readline().decode('utf-8').strip()
-            print(f"Arduino에서 받은 데이터: {data}")
-            with data_lock:
-                process_sensor_data(data)
-                process_10min(data)
+            try:
+                data = ser.readline().decode('utf-8').strip()
+                print(f"Arduino에서 받은 데이터: {data}")
+                with data_lock:
+                    process_sensor_data(data)
+                    process_10min(data)
+            except Exception as e:
+                print(f"시리얼 데이터 처리 오류: {e}")
+
 
 def process_10min(data):
     global sensor_data
