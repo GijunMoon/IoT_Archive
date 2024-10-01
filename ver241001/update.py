@@ -94,7 +94,6 @@ def process_10min(data):
     except Exception as e:
         print(f"10분 타이머 처리 오류: {e}")
 
-
 def process_sensor_data(data):
     """시리얼 데이터를 가공하여 전역 변수에 저장."""
     global sensor_data
@@ -123,7 +122,7 @@ def process_sensor_data(data):
             elif line.startswith("Door: Opened"):
                 sensor_data['door_status'] = "door Opened"
             elif line.startswith("Door: Closed"):
-                sensor_data['door_status'] = "door Closed"
+                sensor_data['door_status'] = "door Closed"  # 이 부분이 중요합니다.
             elif line.startswith("Door: Netural"):
                 sensor_data['door_status'] = "door Netural"
             elif "comfortable" in line or "good" in line or "Rain" in line or "Dark" in line:
