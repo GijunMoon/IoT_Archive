@@ -59,8 +59,8 @@ def serial_read():
 
 
 def process_10min(data):
+    """10분 주기의 데이터를 처리."""
     global sensor_data
-
     try:
         lines = data.split('\n')
         processing_averages = False
@@ -70,13 +70,14 @@ def process_10min(data):
                 # 8888888 신호가 들어왔을 때 평균 계산 시작
                 processing_averages = True
                 continue
-            elif processing_averages and line in ['5', '6', '7']:
-                # 5, 6, 7 신호가 들어왔을 때
-                if line == '5':
+            elif processing_averages and line.startswith("door state:"):
+                # door state 신호가 들어왔을 때
+                state = line.split(':')[1].strip()
+                if state == "5":
                     sensor_data['door_status'] = "Door Opened"
-                elif line == '6':
+                elif state == "6":
                     sensor_data['door_status'] = "Door Closed"
-                elif line == '7':
+                elif state == "7":
                     sensor_data['door_status'] = "Door Neutral"
 
                 # 문 상태에 따른 동작 수행
