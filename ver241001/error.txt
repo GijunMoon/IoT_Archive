@@ -1,9 +1,13 @@
-Traceback (most recent call last):
-  File "/usr/lib/python3.11/threading.py", line 1038, in _bootstrap_inner
-    self.run()
-  File "/usr/lib/python3.11/threading.py", line 975, in run
-    self._target(*self._args, **self._kwargs)
-  File "/home/user/pienv/myflask/flask/yolov5flask/main.py", line 51, in serial_read
-    data = ser.readline().decode('utf-8').strip()
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-UnicodeDecodeError: 'utf-8' codec can't decode byte 0xec in position 19: invalid continuation byte
+def process_10min(data):
+    try:
+        if data == '------------10 minutes have passed.------------':
+            serial_write(data='0')  # Signal to the actuator to prepare for opening
+            time.sleep(3)  # Wait for 3 seconds
+            actuator.open_a()  # Open the actuator
+            time.sleep(5)  # Allow some time for the actuator to fully open
+            serial_write(data='1')  # Signal that the door is now open
+            
+            with data_lock:  # Safely update shared resource
+                sensor_data['door_status'] = "door Opened"
+    except Exception as e:
+        print(f"Error processing 10-minute timer: {e}")
