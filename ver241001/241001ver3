@@ -63,12 +63,14 @@ def process_10min(data):
 
     try:
         lines = data.split('\n')
+        processing_averages = False
         for line in lines:
             line = line.strip()
             if line == '8888888':
-                # 8888888 신호가 들어왔을 때
+                # 8888888 신호가 들어왔을 때 평균 계산 시작
+                processing_averages = True
                 continue
-            elif line in ['5', '6', '7']:
+            elif processing_averages and line in ['5', '6', '7']:
                 # 5, 6, 7 신호가 들어왔을 때
                 if line == '5':
                     sensor_data['door_status'] = "Door Opened"
@@ -105,7 +107,29 @@ def process_10min(data):
                 elif door_status == "Door Neutral":
                     # 중립 상태일 때는 아무 동작도 하지 않음
                     print("문 상태: 중립. 아무 동작도 수행하지 않습니다.")
-
+                
+                # 평균 계산 완료 후 처리 중단
+                processing_averages = False
+            elif processing_averages:
+                # 평균 데이터 처리
+                if line.startswith("Average Humidity (Sensor 1):"):
+                    sensor_data['average_humidity_1'] = line.split(':')[1].strip()
+                elif line.startswith("Average Temperature (Sensor 1):"):
+                    sensor_data['average_temperature_1'] = line.split(':')[1].strip()
+                elif line.startswith("Average Humidity (Sensor 2):"):
+                    sensor_data['average_humidity_2'] = line.split(':')[1].strip()
+                elif line.startswith("Average Temperature (Sensor 2):"):
+                    sensor_data['average_temperature_2'] = line.split(':')[1].strip()
+                elif line.startswith("Average Light Level:"):
+                    sensor_data['average_light_level'] = line.split(':')[1].strip()
+                elif line.startswith("Average Rain Level:"):
+                    sensor_data['average_rain_level'] = line.split(':')[1].strip()
+                elif line.startswith("Average PM2.5 Level:"):
+                    sensor_data['average_pm2_5'] = line.split(':')[1].strip()
+                elif line.startswith("10 minute average discomfort index 1:"):
+                    sensor_data['average_discomfort_index_1'] = line.split(':')[1].strip()
+                elif line.startswith("10 minute average discomfort index 2:"):
+                    sensor_data['average_discomfort_index_2'] = line.split(':')[1].strip()
     except Exception as e:
         print(f"10분 타이머 처리 오류: {e}")
 
@@ -116,12 +140,14 @@ def process_sensor_data(data):
         lines = data.split('\n')
         for line in lines:
             line = line.strip()
-            if line == "5":
-                sensor_data['door_status'] = "Door Opened"
-            elif line == "6":
-                sensor_data['door_status'] = "Door Closed"
-            elif line == "7":
-                sensor_data['door_status'] = "Door Neutral"
+            if line.startswith("door state:"):
+                state = line.split(':')[1].strip()
+                if state == "5":
+                    sensor_data['door_status'] = "Door Opened"
+                elif state == "6":
+                    sensor_data['door_status'] = "Door Closed"
+                elif state == "7":
+                    sensor_data['door_status'] = "Door Neutral"
             elif line.startswith("Humidity 1:"):
                 sensor_data['humidity_1'] = line.split(':')[1].strip()
             elif line.startswith("Temperature 1:"):
