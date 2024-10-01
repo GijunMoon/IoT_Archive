@@ -55,7 +55,7 @@ def serial_read():
                     process_sensor_data(data)
                     process_10min(data)
             except Exception as e:
-                print(f"시리얼 데이터 처리 오류: {e}")
+                print(f"데이터 처리 오류: {e}, 데이터: {data}")
 
 
 def process_10min(data):
