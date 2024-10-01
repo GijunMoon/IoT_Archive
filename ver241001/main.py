@@ -56,14 +56,15 @@ def serial_read():
 
 def process_10min(data):
     try:
-        if (data == '------------10 minutes have passed.------------'):
-            serial_write(data='0')
-            time.sleep(3)
-            actuator.open_a()
-            time.sleep(5)
-            serial_write(data='1')
-            with data_lock:
-				sensor_data['door_status'] = "door Opened"
+        if data == '------------10 minutes have passed.------------':
+            serial_write(data='0')  # Signal to the actuator to prepare for opening
+            time.sleep(3)  # Wait for 3 seconds
+            actuator.open_a()  # Open the actuator
+            time.sleep(5)  # Allow some time for the actuator to fully open
+            serial_write(data='1')  # Signal that the door is now open
+            
+            with data_lock:  # Safely update shared resource
+                sensor_data['door_status'] = "door Opened"
     except Exception as e:
         print(f"10분 타이머 처리 오류: {e}")
 
