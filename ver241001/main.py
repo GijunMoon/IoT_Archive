@@ -55,6 +55,8 @@ def serial_read():
                 process_10min(data)
 
 def process_10min(data):
+    global sensor_data
+    
     try:
         if data == '------------10 minutes have passed.------------':
             serial_write(data='0')  # Signal to the actuator to prepare for opening
