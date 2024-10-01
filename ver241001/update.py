@@ -75,7 +75,7 @@ def process_10min(data):
 
                 with data_lock:  # 전역 변수 보호
                     sensor_data['door_status'] = "door Opened"
-            
+
             elif door_status == "door Closed":
                 # 문 닫힘 상태일 때 동작
                 serial_write(data='0')  # 준비 상태 신호 전송
@@ -86,7 +86,7 @@ def process_10min(data):
 
                 with data_lock:  # 전역 변수 보호
                     sensor_data['door_status'] = "door Closed"
-            
+
             elif door_status == "door Netural":
                 # 중립 상태일 때는 아무 동작도 하지 않음
                 print("문 상태: 중립. 아무 동작도 수행하지 않습니다.")
