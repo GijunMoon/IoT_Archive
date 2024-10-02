@@ -430,7 +430,7 @@ void loop() {                    //계속 반복
     0 : 열림 */
 
     digitalWrite(Relaypin, LOW);   // Relaypin을 LOW로 설정하여 잠금 상태로 전환
-  } else (command == "0"){                         // 명령이 "0"일 경우
+  } else if (command == "0"){                         // 명령이 "0"일 경우
     digitalWrite(Relaypin, HIGH);  // 릴레이 핀을 HIGH로 설정하여 잠금 해제
   }
 }
