@@ -59,14 +59,16 @@ def process_10min(data):
         if (data == '------------10 minutes have passed.------------'):
             serial_write(data='0')
             actuator.setMotor(CH1, 100, OPEN)
-            time.sleep(8)
+            time.sleep(3)
+            process_10min_data(data)
+            time.sleep(5)
             serial_write(data='1')
     except Exception as e:
         print(f"10분 타이머 처리 오류: {e}")
 
 def process_sensor_data(data):
     """시리얼 데이터를 가공하여 전역 변수에 저장."""
-    global sensor_data
+    global sensor_data #Arduino에서 출력되는 데이터 형식을 읽기 위해서는 아래와 같은 형식을 무조건 따라야합니다.
     try:
         lines = data.split('\n')
         for line in lines:
@@ -100,6 +102,28 @@ def process_sensor_data(data):
     except Exception as e:
         print(f"데이터 처리 오류: {e}")
 
+def process_10min_data(data):
+    global sensor_data
+    try:
+        lines = data.split('\n')
+        for line in lines:
+            if line.startswith("Average Humidity (Sensor 1):"):
+                sensor_data['humidity_1'] = line.split(':')[1].strip()
+            elif line.startswith("Average Temperature (Sensor 1):"):
+                sensor_data['temperature_1'] = line.split(':')[1].strip()
+            elif line.startswith("Average Humidity (Sensor 2):"):
+                sensor_data['humidity_2'] = line.split(':')[1].strip()
+            if line.startswith("Average Temperature (Sensor 2):"):
+                sensor_data['temperature_2'] = line.split(':')[1].strip()
+            elif line.startswith("Average Light Level:"):
+                sensor_data['light_level'] = line.split(':')[1].strip()
+            elif line.startswith("Average Rain Level:"):
+                sensor_data['rain_level'] = line.split(':')[1].strip()
+            if line.startswith("Average PM2.5 Level:"):
+                sensor_data['pm2_5'] = line.split(':')[1].strip()
+    except Exception as e:
+        print(f"데이터 처리 오류: {e}")
+        
 # 백그라운드 스레드에서 시리얼 읽기 함수 시작
 thread = threading.Thread(target=serial_read, daemon=True)
 thread.start()

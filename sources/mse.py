@@ -1,58 +1,58 @@
-#경사하강법 선형회귀
-
-from sklearn.preprocessing import StandardScaler
 import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+import weather
 
-# 가상의 역사 데이터 (예시)
-external_temp = np.array([26, 25, 24, 23, 22])
-external_humidity = np.array([52, 50, 49, 48, 47])
-sensor_temp = np.array([25, 24, 23, 22, 21])
-sensor_humidity = np.array([50, 48, 47, 46, 45])
+# Simulate receiving the same external weather data multiple times
+weather_data = weather.fetch_external_weather()
 
-# 데이터 정규화
+external_weather_example = {'temperature': weather_data['temperature'], 'humidity': weather_data['humidity'], 'pm_25': weather_data['pm_25']}
+num_samples = 5  # Number of repeated measurements
+
+# Create arrays from repeated external weather values
+external_temp_train = np.full(num_samples, external_weather_example['temperature'], dtype=float)
+external_humidity_train = np.full(num_samples, external_weather_example['humidity'], dtype=float)
+external_pm25_train = np.full(num_samples, external_weather_example['pm_25'], dtype=float)
+
+# Simulate sensor data corresponding to these external conditions
+sensor_temp_train = external_temp_train - 1  # Assuming sensor reads 1 degree lower
+sensor_humidity_train = external_humidity_train - 1  # Assuming sensor reads 1% lower
+sensor_pm25_train = external_pm25_train * 0.9  # Assuming sensor reads 10% lower
+
+# Prepare the data
+X_train = np.column_stack((external_temp_train, external_humidity_train, external_pm25_train))
+y_temp_train = sensor_temp_train
+y_humidity_train = sensor_humidity_train
+y_pm25_train = sensor_pm25_train
+
+# Standardize features
 scaler = StandardScaler()
-X = np.column_stack((external_temp, external_humidity))
-X_normalized = scaler.fit_transform(X)
+X_train_scaled = scaler.fit_transform(X_train)
 
-y_temp = sensor_temp
-y_humidity = sensor_humidity
-
-# 가중치 초기화
-w_temp = np.zeros(X_normalized.shape[1] + 1)
-w_humidity = np.zeros(X_normalized.shape[1] + 1)
-
-# 학습 하이퍼파라미터
-learning_rate = 0.001  # 학습률을 작게 설정
-epochs = 1000
-
-def predict(X, w):
-    return np.dot(X, w[1:]) + w[0]
-
-def gradient_descent(X, y, w, learning_rate, epochs):
-    m = len(y)
-    for epoch in range(epochs):
-        y_pred = predict(X, w)
-        error = y_pred - y
-        w[0] -= learning_rate * np.sum(error) / m
-        w[1:] -= learning_rate * np.dot(error, X) / m
-    return w
-
-# 모델 학습
-w_temp = gradient_descent(X_normalized, y_temp, w_temp, learning_rate, epochs)
-w_humidity = gradient_descent(X_normalized, y_humidity, w_humidity, learning_rate, epochs)
-
-# 학습된 가중치 출력
-#print("Temperature Model Weights:", w_temp)
-#print("Humidity Model Weights:", w_humidity)
+# Train linear regression models
+model_temp = LinearRegression().fit(X_train_scaled, y_temp_train)
+model_humidity = LinearRegression().fit(X_train_scaled, y_humidity_train)
+model_pm25 = LinearRegression().fit(X_train_scaled, y_pm25_train)
 
 def calibrate_sensor_data(sensor_data, external_weather):
-    """경사 하강법을 이용한 센서 데이터 보정."""
+    """Calibrate sensor data using trained linear regression models."""
     calibrated_data = sensor_data.copy()
     
-    if external_weather:
-        X_new = np.array([[float(external_weather['temperature']), float(external_weather['humidity'])]])
-        X_new_normalized = StandardScaler.transform(X_new)  # 입력 데이터 정규화
-        calibrated_data['temperature_1'] = str(predict(X_new_normalized, w_temp)[0])
-        calibrated_data['humidity_1'] = str(predict(X_new_normalized, w_humidity)[0])
+    # Prepare new data for prediction
+    if all(k in external_weather for k in ['temperature', 'humidity', 'pm_25']):
+        X_new = np.array([[float(sensor_data['temperature_1']), float(sensor_data['humidity_1']), float(sensor_data['pm2_5'])]])
+        X_new_scaled = scaler.transform(X_new)  # Scale the new data
+        
+        # Predict and update the calibrated data
+        calibrated_data['temperature_1'] = str(model_temp.predict(X_new_scaled)[0])
+        calibrated_data['humidity_1'] = str(model_humidity.predict(X_new_scaled)[0])
+        calibrated_data['pm2_5'] = str(model_pm25.predict(X_new_scaled)[0])
     
     return calibrated_data
+
+"""
+# Example usage
+sensor_data_example = {'temperature_1': '21.0', 'humidity_1': '45.0', 'pm2_5': '13.5'}
+calibrated_data = calibrate_sensor_data(sensor_data_example, external_weather_example)
+print(calibrated_data)
+"""

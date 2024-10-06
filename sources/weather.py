@@ -5,6 +5,11 @@
 # 선형회귀 알고리즘 (X)
 # 오차 보정 확인 (X)
 # main.py와 통합 (V)
+import sys
+import os
+
+# Append the parent directory to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import requests
 from datetime import datetime
@@ -44,6 +49,15 @@ params ={'serviceKey' : keys,
          'base_time' : get_current_hour_string(), 
          'nx' : '81', 
          'ny' : '75' }
+
+url_pm = 'https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty'
+params_pm ={'serviceKey' : keys, 
+         'returnType' : 'XML', 
+         'numOfRows' : '100', 
+         'pageNo' : '1', 
+         'sidoName' : '경남', 
+         'ver' : '1.0'
+        }
 
 def forecast():
     # 값 요청 (웹 브라우저 서버에서 요청 - url주소와 파라미터)
@@ -103,14 +117,36 @@ def proc_weather():
         str_sky = str_sky + "습도 : " + dict_sky['hum'] + '%'
 
     return str_sky
-    
-#print(proc_weather())
+
+def pm():
+    # 값 요청 (웹 브라우저 서버에서 요청 - url주소와 파라미터)
+    res = requests.get(url_pm, params = params_pm)
+
+    #XML -> 딕셔너리
+    xml_data = res.text
+    dict_data = xmltodict.parse(xml_data)
+
+    pm_data = dict()
+    pm_data = dict_data.get('response', {}).get('body', {}).get('items', {}).get('item', [])
+
+    for item in pm_data:
+            if item.get('stationName') == '상대동(진주)':
+                pm25_value = item.get('pm25Value')
+                #print(f"PM2.5 Value for 상대동(진주): {pm25_value}")
+
+                return str(pm25_value)
+    else:
+        print(f"Request failed with status code {res.status_code}")
+
+
 def fetch_external_weather():
     dict_sky = forecast()
+    pm25 = pm()
     try:
         weather_data = {
-            'temperature': dict_sky['temp'],
+            'temperature': dict_sky['tmp'],
             'humidity': dict_sky['hum'],
+            'pm_25': pm25
         }
         return weather_data
     except Exception as e:
