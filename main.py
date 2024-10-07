@@ -151,6 +151,7 @@ def index():
         if button_action == 'Y':
             return render_template('setting.html')
         elif button_action == 'N':
+            serial_write(data='n')
             return render_template('main.html')
         elif button_action == 'OPEN':
             door_control('open')
@@ -201,7 +202,7 @@ def settings():
 
     try:
         serial_write(data='y')
-        time.sleep(1.5)
+        time.sleep(5)
         serial_write(data=humidity)
         time.sleep(1.5)
         serial_write(data=hot_temperature)
