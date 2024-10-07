@@ -1,7 +1,12 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
-import weather
+import sys
+import os
+
+# Append the parent directory to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import sources.weather as weather
 
 # Simulate receiving the same external weather data multiple times
 weather_data = weather.fetch_external_weather()
@@ -40,7 +45,7 @@ def calibrate_sensor_data(sensor_data, external_weather):
     
     # Prepare new data for prediction
     if all(k in external_weather for k in ['temperature', 'humidity', 'pm_25']):
-        X_new = np.array([[float(sensor_data['temperature_1']), float(sensor_data['humidity_1']), float(sensor_data['pm2_5'])]])
+        X_new = np.array([[float(sensor_data['temperature_1'][:4]), float(sensor_data['humidity_1'][:4]), float(sensor_data['pm2_5'])]])
         X_new_scaled = scaler.transform(X_new)  # Scale the new data
         
         # Predict and update the calibrated data
