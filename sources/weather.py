@@ -112,9 +112,11 @@ def proc_weather():
             str_sky = str_sky + "눈이 날림"
         str_sky = str_sky + " / "
     if dict_sky['tmp'] != None:
-        str_sky = str_sky + "온도 : " + dict_sky['tmp'] + 'ºC /'
+        str_sky = str_sky + "온도 : " + dict_sky['tmp'] + 'ºC / '
     if dict_sky['hum'] != None:
-        str_sky = str_sky + "습도 : " + dict_sky['hum'] + '%'
+        str_sky = str_sky + "습도 : " + dict_sky['hum'] + '% / '
+    pm25 = pm()
+    str_sky = str_sky + "미세먼지 농도 : " + pm25
 
     return str_sky
 
