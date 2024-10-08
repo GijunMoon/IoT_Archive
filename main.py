@@ -52,9 +52,10 @@ def serial_read():
             print(f"Arduino에서 받은 데이터: {data}")
             with data_lock:
                 process_sensor_data(data)
-                process_10min(data)
 
-def process_10min(data):
+def process_sensor_data(data):
+    """시리얼 데이터를 가공하여 전역 변수에 저장."""
+    global sensor_data #Arduino에서 출력되는 데이터 형식을 읽기 위해서는 아래와 같은 형식을 무조건 따라야합니다.
     try:
         if (data == '88888888888888888888888888' or data == '------------10 minutes have passed.------------'): #10분 문구 인식 (숫자 / 문자 타입)
             serial_write(data='0')
@@ -64,44 +65,37 @@ def process_10min(data):
             process_10min_data(data)
             time.sleep(5)
             serial_write(data='1')
-            with data_lock:
-                sensor_data['door_status'] = "door Opened" #문 열림 상태 수정
-    except Exception as e:
-        print(f"10분 타이머 처리 오류: {e}")
-
-def process_sensor_data(data):
-    """시리얼 데이터를 가공하여 전역 변수에 저장."""
-    global sensor_data #Arduino에서 출력되는 데이터 형식을 읽기 위해서는 아래와 같은 형식을 무조건 따라야합니다.
-    try:
-        lines = data.split('\n')
-        for line in lines:
-            line = line.strip()
-            if line.startswith("Humidity 1:"):
-                sensor_data['humidity_1'] = line.split(':')[1].strip()
-            elif line.startswith("Temperature 1:"):
-                sensor_data['temperature_1'] = line.split(':')[1].strip()
-            elif line.startswith("Humidity 2:"):
-                sensor_data['humidity_2'] = line.split(':')[1].strip()
-            elif line.startswith("Temperature 2:"):
-                sensor_data['temperature_2'] = line.split(':')[1].strip()
-            elif line.startswith("Light Level:"):
-                sensor_data['light_level'] = line.split(':')[1].strip()
-            elif line.startswith("Rain Level:"):
-                sensor_data['rain_level'] = line.split(':')[1].strip()
-            elif line.startswith("PM2.5 Level:"):
-                sensor_data['pm2_5'] = line.split(':')[1].strip()
-            elif line.startswith("Discomfort Index 1:"):
-                sensor_data['discomfort_index_1'] = line.split(':')[1].strip()
-            elif line.startswith("Discomfort Index 2:"):
-                sensor_data['discomfort_index_2'] = line.split(':')[1].strip()
-            elif line.startswith("Door: Opened"):
-                sensor_data['door_status'] = "door Opened"
-            elif line.startswith("Door: Closed"):
-                sensor_data['door_status'] = "door Closed"
-            elif line.startswith("Door: Netural"):
-                sensor_data['door_status'] = "door Netural"
-            elif "comfortable" in line or "good" in line or "Rain" in line or "Dark" in line:
-                sensor_data['status'] = line
+            sensor_data['door_status'] = "door Opened" #문 열림 상태 수정
+        else:
+            lines = data.split('\n')
+            for line in lines:
+                line = line.strip()
+                if line.startswith("Humidity 1:"):
+                    sensor_data['humidity_1'] = line.split(':')[1].strip()
+                elif line.startswith("Temperature 1:"):
+                    sensor_data['temperature_1'] = line.split(':')[1].strip()
+                elif line.startswith("Humidity 2:"):
+                    sensor_data['humidity_2'] = line.split(':')[1].strip()
+                elif line.startswith("Temperature 2:"):
+                    sensor_data['temperature_2'] = line.split(':')[1].strip()
+                elif line.startswith("Light Level:"):
+                    sensor_data['light_level'] = line.split(':')[1].strip()
+                elif line.startswith("Rain Level:"):
+                    sensor_data['rain_level'] = line.split(':')[1].strip()
+                elif line.startswith("PM2.5 Level:"):
+                    sensor_data['pm2_5'] = line.split(':')[1].strip()
+                elif line.startswith("Discomfort Index 1:"):
+                    sensor_data['discomfort_index_1'] = line.split(':')[1].strip()
+                elif line.startswith("Discomfort Index 2:"):
+                    sensor_data['discomfort_index_2'] = line.split(':')[1].strip()
+                elif line.startswith("Door: Opened"):
+                    sensor_data['door_status'] = "door Opened"
+                elif line.startswith("Door: Closed"):
+                    sensor_data['door_status'] = "door Closed"
+                elif line.startswith("Door: Netural"):
+                    sensor_data['door_status'] = "door Netural"
+                elif "comfortable" in line or "good" in line or "Rain" in line or "Dark" in line:
+                    sensor_data['status'] = line
     except Exception as e:
         print(f"데이터 처리 오류: {e}")
 
