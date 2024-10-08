@@ -11,7 +11,16 @@ import sources.weather as weather
 # Simulate receiving the same external weather data multiple times
 weather_data = weather.fetch_external_weather()
 
-external_weather_example = {'temperature': weather_data['temperature'], 'humidity': weather_data['humidity'], 'pm_25': weather_data['pm_25']}
+# Check for valid weather data
+if weather_data is None or any(value is None for value in weather_data.values()):
+    print("Fetched weather data contains None values:", weather_data)
+    raise ValueError("Weather data is invalid.")
+
+external_weather_example = {
+    'temperature': weather_data['temperature'],
+    'humidity': weather_data['humidity'],
+    'pm_25': weather_data['pm_25']
+}
 num_samples = 5  # Number of repeated measurements
 
 # Create arrays from repeated external weather values
@@ -29,6 +38,15 @@ X_train = np.column_stack((external_temp_train, external_humidity_train, externa
 y_temp_train = sensor_temp_train
 y_humidity_train = sensor_humidity_train
 y_pm25_train = sensor_pm25_train
+
+# Check for NaN values in the input data
+if np.any(np.isnan(X_train)) or np.any(np.isnan(y_temp_train)):
+    print("Warning: NaN values found in input data.")
+    
+# Handle missing values (if any)
+mask = ~np.isnan(X_train).any(axis=1) & ~np.isnan(y_temp_train)
+X_train = X_train[mask]
+y_temp_train = y_temp_train[mask]
 
 # Standardize features
 scaler = StandardScaler()
@@ -55,9 +73,8 @@ def calibrate_sensor_data(sensor_data, external_weather):
     
     return calibrated_data
 
-"""
 # Example usage
 sensor_data_example = {'temperature_1': '21.0', 'humidity_1': '45.0', 'pm2_5': '13.5'}
 calibrated_data = calibrate_sensor_data(sensor_data_example, external_weather_example)
 print(calibrated_data)
-"""
+
