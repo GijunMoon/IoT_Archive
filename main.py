@@ -161,8 +161,24 @@ def door_control(param):
 app = Flask(__name__, template_folder='templates')
 
 @app.route('/', methods=['GET', 'POST'])
-def index():
+def index(route):
     global sensor_data
+
+    if request.method == 'GET':
+        if route == 'index':
+            return render_template('main.html')
+        elif route == 'set_':
+            return render_template('setting.html')
+        elif route == 'door_':
+            return render_template('door.html')
+        elif route == 'weather_':
+            return render_template('weather.html')
+        elif route == 'camera_':
+            return render_template('camera.html')
+        elif route == 'video_':
+            return render_template('video.html')
+        else:
+            return "404 Not Found", 404
 
     if request.method == 'POST':
         button_action = request.form.get('button')
@@ -193,24 +209,8 @@ def index():
         actuator.cleanup_gpio()
 
         return jsonify(success=True)
-
-    updated_settings = {
-        'humidity': request.args.get('humidity', ''),
-        'hot_temperature': request.args.get('hot_temperature', ''),
-        'cold_temperature': request.args.get('cold_temperature', ''),
-        'indoor_light': request.args.get('indoor_light', ''),
-        'pm': request.args.get('pm', '')
-    }
-    return render_template('main.html', updated_settings=updated_settings)
-
-@app.route('/set', methods=['GET', 'POST'])
-def set_():
-    if request.method == 'POST':
-        button_action = request.form.get('button')
-        if button_action == 'Y':
-            return render_template('setting.html')
-        return jsonify(success=True)
     
+
     updated_settings = {
         'humidity': request.args.get('humidity', ''),
         'hot_temperature': request.args.get('hot_temperature', ''),
@@ -219,23 +219,6 @@ def set_():
         'pm': request.args.get('pm', '')
     }
     return render_template('main.html', updated_settings=updated_settings)
-
-@app.route('/door', methods=['GET', 'POST'])
-def door_():
-    return render_template('door.html')
-
-@app.route('/weather', methods=['GET', 'POST'])
-def weather_():
-    return render_template('weather.html')
-
-@app.route('/camera', methods=['GET', 'POST'])
-def camera_():
-    return render_template('camera.html')
-
-@app.route('/video', methods=['GET', 'POST'])
-def video_():
-    return render_template('video.html')
-
 
 @app.route('/settings', methods=['POST'])
 def settings():
