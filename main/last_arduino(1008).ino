@@ -1,4 +1,3 @@
-//평균값 1분 모드
 #include <dht.h>         // DHT 온습도 센서를 사용하기 위한 라이브러리 포함
 #include <pm2008_i2c.h>  // PM2008 미세먼지 센서를 I2C 통신으로 제어하기 위한 라이브러리 포함
 #include <Servo.h>       // 서보 모터 제어를 위한 Servo 라이브러리 포함
@@ -343,7 +342,7 @@ void loop() {                    //계속 반복
   command.trim();                                 //여분의 공백 제거
 
   // 10분 타이머 확인
-  if (now - before >= 60) {                                            // 10분 = 600,000밀리초
+  if (now - before >= 60000) {                                            // 10분 = 600,000밀리초
     Serial.println(F("------------10 minutes have passed.------------"));  //10분이 지났다는 문자 출력
     loop_10avg();
     // 10분 후에 실행할 코드를 추가
@@ -383,7 +382,7 @@ void loop() {                    //계속 반복
 
 
   // 1분 간격으로 배열에 값 저장
-  if (now - lastSampleTime >= 60000) {     // 1분 = 60,000밀리초
+  if (now - lastSampleTime >= 6000) {     // 1분 = 60,000밀리초
     humValues[currentIndex] = hum;         // 실외 습도 값 저장
     tempValues[currentIndex] = temp;       // 실외 온도 값 저장
     hum2Values[currentIndex] = hum2;       // 실내 습도 값 저장
