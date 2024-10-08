@@ -342,7 +342,7 @@ void loop() {                    //계속 반복
   command.trim();                                 //여분의 공백 제거
 
   // 10분 타이머 확인
-  if (now - before >= 600000) {                                            // 10분 = 600,000밀리초
+  if (now - before >= 60) {                                            // 10분 = 600,000밀리초
     Serial.println(F("------------10 minutes have passed.------------"));  //10분이 지났다는 문자 출력
     loop_10avg();
     // 10분 후에 실행할 코드를 추가
