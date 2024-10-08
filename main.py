@@ -225,15 +225,15 @@ def door_():
     return render_template('door.html')
 
 @app.route('/weather', methods=['GET', 'POST'])
-def door_():
+def weather_():
     return render_template('weather.html')
 
 @app.route('/camera', methods=['GET', 'POST'])
-def door_():
+def camera_():
     return render_template('camera.html')
 
 @app.route('/video', methods=['GET', 'POST'])
-def door_():
+def video_():
     return render_template('video.html')
 
 
