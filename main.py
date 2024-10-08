@@ -99,6 +99,7 @@ def process_10min_data(data):
     try:
         lines = data.split('\n')
         for line in lines:
+            line = line.strip()
             if line.startswith("Average Humidity (Sensor 1):"):
                 sensor_data['humidity_1'] = line.split(':')[1].strip()
             elif line.startswith("Average Temperature (Sensor 1):"):
@@ -117,15 +118,21 @@ def process_10min_data(data):
                 sensor_data['discomfort_index_1'] = line.split(':')[1].strip()
             elif line.startswith("10 minute average discomfort index 2:"):
                 sensor_data['discomfort_index_2'] = line.split(':')[1].strip()
-            elif line.startswith("5"):  # 창문 열기
+            
+            # Directly check for window control commands
+            elif line == "5":  # 창문 열기
+                print("Command received: 5 - Opening door.")
                 door_control("open")
                 sensor_data['door_status'] = "door Opened"
-            elif line.startswith("6"):  # 창문 닫기
+            elif line == "6":  # 창문 닫기
+                print("Command received: 6 - Closing door.")
                 door_control("close")
                 sensor_data['door_status'] = "door Closed"
-            elif line.startswith("7"):  # 창문 중립
+            elif line == "7":  # 창문 중립
+                print("Command received: 7 - Setting door to neutral.")
                 actuator.setMotor(CH1, 100, STOP)
                 sensor_data['door_status'] = "door Neutral"
+
     except Exception as e:
         print(f"10분 데이터 처리 오류: {e}")
 
