@@ -1,3 +1,6 @@
+//1분평균
+//실외 HUM2, avgHUM
+//실내 HUM, avgHUM2
 #include <dht.h>         // DHT 온습도 센서를 사용하기 위한 라이브러리 포함
 #include <pm2008_i2c.h>  // PM2008 미세먼지 센서를 I2C 통신으로 제어하기 위한 라이브러리 포함
 #include <Servo.h>       // 서보 모터 제어를 위한 Servo 라이브러리 포함
@@ -295,7 +298,7 @@ void controlServoBasedOnAverage(float avgTemp, float avgHum, float avgTemp2, flo
     //myservo.write(180);  // 서보를 열림 위치로 회전
     Serial.println(5);  //문을 열라는 문자 출력
 
-  } else if (temp2 < userCool || pm25Value > userDust || (discomfortIndex1 > discomfortIndex2 || discomfortIndex1 >= 70 || temp >= 30 || hum2 >= 80 || rainValue < 900 || pm25Value >= 81)) {
+  } else if (avgTemp < userCool || pm25Value > userDust || (discomfortIndex1 > discomfortIndex2 || discomfortIndex1 >= 70 || temp2 >= 30 || hum2 >= 80 || rainValue < 900 || pm25Value >= 81)) {
     //사용자 설정 온도보다 실내온도가 낮거나 설정 미세먼지보다 실외 미세먼지가 높거나 실외 불쾌지수가 실내 불쾌지수보다 높거나 실외 불쾌지수가 70이상이거나 실외 온도가 30이상이거나 실외 습도가 80이상이거나 빗물값이 900이하이거나 미세먼지가 81이상이거나 조건 하나 이상 출족할 경우
     // myservo.write(0);  // 서보를 닫힘 위치로 회전
     Serial.println(6);   //문을 닫으라는 문자 출력
@@ -342,7 +345,7 @@ void loop() {                    //계속 반복
   command.trim();                                 //여분의 공백 제거
 
   // 10분 타이머 확인
-  if (now - before >= 600000) {                                            // 10분 = 600,000밀리초
+  if (now - before >= 60000) {                                            // 10분 = 600,000밀리초
     Serial.println(F("------------10 minutes have passed.------------"));  //10분이 지났다는 문자 출력
     loop_10avg();
     // 10분 후에 실행할 코드를 추가
@@ -382,7 +385,7 @@ void loop() {                    //계속 반복
 
 
   // 1분 간격으로 배열에 값 저장
-  if (now - lastSampleTime >= 60000) {     // 1분 = 60,000밀리초
+  if (now - lastSampleTime >= 6000) {     // 1분 = 60,000밀리초
     humValues[currentIndex] = hum;         // 실외 습도 값 저장
     tempValues[currentIndex] = temp;       // 실외 온도 값 저장
     hum2Values[currentIndex] = hum2;       // 실내 습도 값 저장
