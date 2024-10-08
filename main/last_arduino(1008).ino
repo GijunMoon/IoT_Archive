@@ -1,3 +1,4 @@
+//평균값 1분 모드
 #include <dht.h>         // DHT 온습도 센서를 사용하기 위한 라이브러리 포함
 #include <pm2008_i2c.h>  // PM2008 미세먼지 센서를 I2C 통신으로 제어하기 위한 라이브러리 포함
 #include <Servo.h>       // 서보 모터 제어를 위한 Servo 라이브러리 포함
