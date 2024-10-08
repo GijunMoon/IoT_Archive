@@ -58,14 +58,7 @@ def process_sensor_data(data):
     global sensor_data #Arduino에서 출력되는 데이터 형식을 읽기 위해서는 아래와 같은 형식을 무조건 따라야합니다.
     try:
         if (data == '88888888888888888888888888' or data == '------------10 minutes have passed.------------'): #10분 문구 인식 (숫자 / 문자 타입)
-            serial_write(data='0')
-            time.sleep(5)
-            actuator.setMotor(CH1, 100, OPEN)
-            time.sleep(3)
             process_10min_data(data)
-            time.sleep(5)
-            serial_write(data='1')
-            sensor_data['door_status'] = "door Opened" #문 열림 상태 수정
         else:
             lines = data.split('\n')
             for line in lines:
