@@ -166,7 +166,21 @@ def index():
 
     if request.method == 'POST':
         button_action = request.form.get('button')
-        if button_action == 'Y':
+        if button_action == 'monitor':
+            return render_template('main.html')
+        elif button_action == 'set':
+            return render_template('set.html')
+        elif button_action == 'door':
+            return render_template('door.html')
+        elif button_action == 'door':
+            return render_template('door.html')
+        elif button_action == 'weather':
+            return render_template('weather.html')
+        elif button_action == 'camera':
+            return render_template('camera.html')
+        elif button_action == 'video':
+            return render_template('video.html')
+        elif button_action == 'Y':
             return render_template('setting.html')
         elif button_action == 'N':
             serial_write(data='n')
