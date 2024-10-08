@@ -56,13 +56,16 @@ def serial_read():
 
 def process_10min(data):
     try:
-        if (data == '------------10 minutes have passed.------------'):
+        if (data == '88888888888888888888888888' or data == '------------10 minutes have passed.------------'): #10분 문구 인식 (숫자 / 문자 타입)
             serial_write(data='0')
+            time.sleep(5)
             actuator.setMotor(CH1, 100, OPEN)
             time.sleep(3)
             process_10min_data(data)
             time.sleep(5)
             serial_write(data='1')
+            with data_lock:
+                sensor_data['door_status'] = "door Opened" #문 열림 상태 수정
     except Exception as e:
         print(f"10분 타이머 처리 오류: {e}")
 
@@ -119,8 +122,18 @@ def process_10min_data(data):
                 sensor_data['light_level'] = line.split(':')[1].strip()
             elif line.startswith("Average Rain Level:"):
                 sensor_data['rain_level'] = line.split(':')[1].strip()
-            if line.startswith("Average PM2.5 Level:"):
+            elif line.startswith("Average PM2.5 Level:"):
                 sensor_data['pm2_5'] = line.split(':')[1].strip()
+            elif line.startswith("10 minute average discomfort index 1:"):
+                sensor_data['discomfort_index_1'] = line.split(':')[1].strip()
+            elif line.startswith("10 minute average discomfort index 2:"):
+                sensor_data['discomfort_index_2'] = line.split(':')[1].strip()
+            elif line.startswith("5"): #10분 문 상태 인식
+                sensor_data['door_status'] = "door Opened"
+            elif line.startswith("6"):
+                sensor_data['door_status'] = "door Closed"
+            elif line.startswith("7"):
+                sensor_data['door_status'] = "door Netural"
     except Exception as e:
         print(f"데이터 처리 오류: {e}")
         
