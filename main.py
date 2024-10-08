@@ -129,10 +129,13 @@ def process_10min_data(data):
             elif line.startswith("10 minute average discomfort index 2:"):
                 sensor_data['discomfort_index_2'] = line.split(':')[1].strip()
             elif line.startswith("5"): #10분 문 상태 인식
+                door_control("open")
                 sensor_data['door_status'] = "door Opened"
             elif line.startswith("6"):
+                door_control("close")
                 sensor_data['door_status'] = "door Closed"
             elif line.startswith("7"):
+                actuator.setMotor(CH1, 100, STOP)
                 sensor_data['door_status'] = "door Netural"
     except Exception as e:
         print(f"데이터 처리 오류: {e}")
@@ -144,11 +147,13 @@ thread.start()
 def door_control(param):
     if param == 'open':
         serial_write(data='0')
+        time.sleep(3)
         actuator.setMotor(CH1, 100, OPEN)
         time.sleep(8)
         serial_write(data='1')
     elif param == 'close':
         serial_write(data='0')
+        time.sleep(3)
         actuator.setMotor(CH1, 100, CLOSE)
         time.sleep(8)
         serial_write(data='1')
