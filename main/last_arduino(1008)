@@ -33,10 +33,6 @@ float userLight = 60;   // 기본 설정 기본 조도
 float reading;          // 조도 값
 int rainValue;          // 빗물 감지 값
 float pm25Value;        // PM2.5 미세먼지 농도 값
-float door_OPEN = 5;
-float door_CLOSE = 6; 
-float door_Neutral = 7;
-float 10_minutes = 88888888888888888888888888;
 
 int currentIndex = 0;              // 현재 배열 인덱스
 unsigned long lastSampleTime = 0;  // 마지막 샘플링 시간
@@ -168,7 +164,7 @@ void processUserInput() {                         //설정 재입력 함수 정�
     Serial.print(F("Received value: "));  //입력된 값 표시
     Serial.println(inputCommand);         //inputCommand변수 출력
 
-    if (inputCommand.equalsIgnoreCase("설정")) {  //설정이라는 단어를 입력받은 경우
+    if (inputCommand.equalsIgnoreCase("y")) {  //설정이라는 단어를 입력받은 경우
       delay(1000);                                //1초 동안 프로그램 일시 중지
       // 초기 상태로 복귀 설정
       currentIndex = 0;     //currrentIndex 0으로 초기화
@@ -189,30 +185,30 @@ float calculateDiscomfortIndex(float temp, float hum) {                         
 // 센서 값 출력 함수
 void printSensorReadings() {        //아두이노 센서 값 출력 함수 정의
   Serial.print(F("Humidity 1: "));  //현재 실외 습도
-  Serial.print(hum2, 1);            //실외 습도값 소수점 이하 1자리만 출력
+  Serial.print(hum2, 1);             //실외 습도값 소수점 이하 1자리만 출력
   Serial.println(F("%"));           //습도 단위 출력
 
   Serial.print(F("Temperature 1: "));  //현재 실외 습도
-  Serial.print(temp2, 1);              //실외 온도값 소수점 이하 1자리만 출력
+  Serial.print(temp2, 1);               //실외 온도값 소수점 이하 1자리만 출력
   Serial.println(F("°C"));             //온도 단위 출력
 
   Serial.print(F("Humidity 2: "));  // 현재 실내 습도
-  Serial.print(hum, 1);             //실내 습도값 소수점 이하 1자리만 출력
+  Serial.print(hum, 1);            //실내 습도값 소수점 이하 1자리만 출력
   Serial.println(F("%"));           //습도 단위 출력
 
   Serial.print(F("Temperature 2: "));  // 현재 실내 온도
-  Serial.print(temp, 1);               //실내 온도값 소수점 이하 1자리만 출력
+  Serial.print(temp, 1);              //실내 온도값 소수점 이하 1자리만 출력
   Serial.println(F("°C"));             //온도 단위 출력
 
   Serial.print(F("Light Level: "));  // 현재 조도
   Serial.println(reading, 2);        // 조도값 소수점 이하 2자리까지 출력
 
-  if (reading >= 200) {                         // 조도 값이 400 이상일 경우
-    Serial.println(F("Very Light"));            // "매우 밝음" 출력
+  if (reading >= 200) {                          // 조도 값이 400 이상일 경우
+    Serial.println(F("Very Light"));             // "매우 밝음" 출력
   } else if (reading >= 20 && reading < 200) {  // 조도 값이 200 이상, 400 미만일 경우
-    Serial.println(F("Normal Light"));          //"보통" 출력
+    Serial.println(F("Normal Light"));           //"보통" 출력
   } else if (reading < 20) {                    // 조도 값이 200 미만일 경우
-    Serial.println(F("Very Dark"));             //"매우 어두움" 출력
+    Serial.println(F("Very Dark"));              //"매우 어두움" 출력
   }
 
   Serial.print(F("Rain Level: "));  // 현재 빗물
@@ -239,8 +235,8 @@ void printSensorReadings() {        //아두이노 센서 값 출력 함수 정�
     Serial.println(F("Fine dust concentration is very bad"));   //"미세먼지 상태 매우 나쁨" 출력
   }
 
-  float discomfortIndex1 = calculateDiscomfortIndex(temp2, hum2);  //실외 불쾌지수 저장
-  float discomfortIndex2 = calculateDiscomfortIndex(temp, hum);    //실내 불쾌지수 저장
+  float discomfortIndex1 = calculateDiscomfortIndex(temp2, hum2);    //실외 불쾌지수 저장
+  float discomfortIndex2 = calculateDiscomfortIndex(temp, hum);  //실내 불쾌지수 저장
 
   Serial.print(F("Discomfort Index 1: "));  //현재 실외 불쾌지수
   Serial.println(discomfortIndex1, 2);      //실외 불쾌지수 소수점 이하 2자리까지 출력
@@ -286,7 +282,7 @@ float calculateAverage(float* arr, int length) {  //평균 값 계산 함수 정
 // 서보 제어 함수
 void controlServoBasedOnAverage(float avgTemp, float avgHum, float avgTemp2, float avgHum2) {  //센서에 따른 서보 제어 함수 정의
   float discomfortIndex1 = calculateDiscomfortIndex(avgTemp, avgHum);                          //실외 불쾌지수 평균 저장
-  float discomfortIndex2 = calculateDiscomfortIndex(avgTemp2, avgHum2);                        //실내 불쾌지수 평균 저장
+  float discomfortIndex2 = calculateDiscomfortIndex(avgTemp2, avgHum2);                          //실내 불쾌지수 평균 저장
 
   Serial.print(F("10 minute average discomfort index 1: "));  //현재 실외 불쾌지수 평균
   Serial.println(discomfortIndex1, 2);                        //실외 불쾌지수 평균 소수점 이하 2자리까지 출력
@@ -297,15 +293,15 @@ void controlServoBasedOnAverage(float avgTemp, float avgHum, float avgTemp2, flo
   if (avgTemp2 > userHot || avgHum2 > userHumi || discomfortIndex2 < discomfortIndex1) {
     //사용자 설정 온도보다 실내 온도가 높거나 설정 습도보다 실내 습도가 높거나 실외 불쾌지수가 실내 불쾌지수보다 낮거나 조건을 하나 이상 충족할 경우
     //myservo.write(180);  // 서보를 열림 위치로 회전
-    Serial.println(door_OPEN);  //문을 열라는 문자 출력
+    Serial.println(5);  //문을 열라는 문자 출력
 
   } else if (temp2 < userCool || pm25Value > userDust || (discomfortIndex1 > discomfortIndex2 || discomfortIndex1 >= 70 || temp >= 30 || hum2 >= 80 || rainValue < 900 || pm25Value >= 81)) {
     //사용자 설정 온도보다 실내온도가 낮거나 설정 미세먼지보다 실외 미세먼지가 높거나 실외 불쾌지수가 실내 불쾌지수보다 높거나 실외 불쾌지수가 70이상이거나 실외 온도가 30이상이거나 실외 습도가 80이상이거나 빗물값이 900이하이거나 미세먼지가 81이상이거나 조건 하나 이상 출족할 경우
     // myservo.write(0);  // 서보를 닫힘 위치로 회전
-    Serial.println(door_CLOSE);   //문을 닫으라는 문자 출력
+    Serial.println(6);   //문을 닫으라는 문자 출력
   } else {                              //위의 경우에 모두 해당하지 않는다면
                                         // myservo.write(90);  // 중립 위치
-    Serial.println(door_Neutral);  //문이 중립이라는 문자 출력
+    Serial.println(7);  //문이 중립이라는 문자 출력
   }
 
   if (reading > userLight) {              //조도 감지 센서의 입력값이 사용자 설정값보다 큰 경우
@@ -347,7 +343,7 @@ void loop() {                    //계속 반복
 
   // 10분 타이머 확인
   if (now - before >= 600000) {                                            // 10분 = 600,000밀리초
-    Serial.println(10_minutes);  //10분이 지났다는 문자 출력
+    Serial.println(F("------------10 minutes have passed.------------"));  //10분이 지났다는 문자 출력
     loop_10avg();
     // 10분 후에 실행할 코드를 추가
     before = now;           // 타이머 재설정
@@ -412,82 +408,77 @@ void loop() {                    //계속 반복
     REQUIRED!: 9600BAUD 
     솔레노이드는 전원이 내려가면 잠기고 (POP) 전원이 올라가면 열림 (DOWN) */
 
-  if (command == "3") {  // PDLC 타이머 제어 (open)
-    // 0도에서 65도까지 이동
-    for (pos = 0; pos <= 65; pos += 1) {
-      myservo.write(pos);  // 서보를 'pos' 위치로 이동
-      break;               // 서보가 위치에 도달할 때까지 15ms 대기
+  if (command == "3") {  //PDLC 타이머 제어
+    //open
+    for (pos = 0; pos <= 65; pos += 1) {  // 0도에서 65도까지 이동
+      myservo.write(pos);                 // 서보를 'pos' 위치로 이동
+      break;                              // 서보가 위치에 도달할 때까지 15ms 대기
     }
-    // 1초 대기 후
-  }
-  if (command == "4") {  // PDLC 타이머 제어 (close)
-    // 65도에서 0도까지 이동
-    for (pos = 130; pos >= 0; pos -= 1) {
-      myservo.write(pos);  // 서보를 'pos' 위치로 이동
-      break;               // 서보가 위치에 도달할 때까지 15ms 대기
+
+  } else if (command == "4") {
+    //close
+    for (pos = 130; pos >= 0; pos -= 1) {  // 65도에서 0도까지 이동
+      myservo.write(pos);                 // 서보를 'pos' 위치로 이동
+      break;                              // 서보가 위치에 도달할 때까지 15ms 대기
     }
-    // 0도에서 65도까지 이동
   }
-
-
-
+  
   if (command == "1") {  // 라즈베리파이에서 명령을 받아 "1"일 경우
 
     //숫자를 문자열로 바꾸지 말 것
     /*1 : 잠김
     0 : 열림 */
+
     digitalWrite(Relaypin, LOW);   // Relaypin을 LOW로 설정하여 잠금 상태로 전환
-  } else if (command == "0") {     // 명령이 "0"일 경우
+  } else if (command == "0"){                         // 명령이 "0"일 경우
     digitalWrite(Relaypin, HIGH);  // 릴레이 핀을 HIGH로 설정하여 잠금 해제
   }
 }
 
-// 10분 평균 계산 설정 함수
-void loop_10avg() {                              //// 10분 평균 계산 및 서보 제어 함수 정의
-  Serial.println(F("Calculating averages..."));  // 평균 계산 문구 출력
+  // 10분 평균 계산 설정 함수
+  void loop_10avg() {                              //// 10분 평균 계산 및 서보 제어 함수 정의
+    Serial.println(F("Calculating averages..."));  // 평균 계산 문구 출력
 
-  float avgHum = calculateAverage(hum2Values, INTERVAL);     // 실외 습도 평균 값 계산
-  float avgTemp = calculateAverage(temp2Values, INTERVAL);   // 실외 온도 평균 값 계산
-  float avgHum2 = calculateAverage(humValues, INTERVAL);     // 실내 습도 평균 값 계산
-  float avgTemp2 = calculateAverage(tempValues, INTERVAL);   // 실내 온도 평균 값 계산
-  float avgLight = calculateAverage(lightValues, INTERVAL);  // 조도 평균 값 계산
-  float avgRain = calculateAverage(rainValues, INTERVAL);    // 빗물 감지 평균 값 계산
-  float avgPM25 = calculateAverage(pm25Values, INTERVAL);    // 미세먼지 농도 평균 값 계산
+    float avgHum = calculateAverage(hum2Values, INTERVAL);      // 실외 습도 평균 값 계산
+    float avgTemp = calculateAverage(temp2Values, INTERVAL);    // 실외 온도 평균 값 계산
+    float avgHum2 = calculateAverage(humValues, INTERVAL);    // 실내 습도 평균 값 계산
+    float avgTemp2 = calculateAverage(tempValues, INTERVAL);  // 실내 온도 평균 값 계산
+    float avgLight = calculateAverage(lightValues, INTERVAL);  // 조도 평균 값 계산
+    float avgRain = calculateAverage(rainValues, INTERVAL);    // 빗물 감지 평균 값 계산
+    float avgPM25 = calculateAverage(pm25Values, INTERVAL);    // 미세먼지 농도 평균 값 계산
 
-  delay(100);  //0.1초 동안 프로그램 일시 중지
+    delay(100);  //0.1초 동안 프로그램 일시 중지
 
-  // 디버그용 평균 값 출력
-  Serial.print(F("Average Humidity (Sensor 1): "));     // 실외 습도 평균 표시 출력
-  Serial.println(avgHum);                               //실외 습도 평균 값 출력
-  Serial.print(F("Average Temperature (Sensor 1): "));  // 실외 온도 평균 표시 출력
-  Serial.println(avgTemp);                              // 실외 온도 평균 값 출력
-  Serial.print(F("Average Humidity (Sensor 2): "));     // 실내 습도 평균 표시 출력
-  Serial.println(avgHum2);                              // 실내 습도 평균 값 출력
-  Serial.print(F("Average Temperature (Sensor 2): "));  // 실내 온도 평균 표시 출력
-  Serial.println(avgTemp2);                             // 실내 온도 평균 값 출력
-  Serial.print(F("Average Light Level: "));             // 조도 평균 표시 출력
-  Serial.println(avgLight);                             // 조도 평균 값 출력
-  Serial.print(F("Average Rain Level: "));              // 빗물 감지 평균 표시 출력
-  Serial.println(avgRain);                              // 빗물 감지 평균 값 출력
-  Serial.print(F("Average PM2.5 Level: "));             // 미세먼지 농도 평균 표시 출력
-  Serial.println(avgPM25);                              // 미세먼지 농도 평균 값 출력
+    // 디버그용 평균 값 출력
+    Serial.print(F("Average Humidity (Sensor 1): "));     // 실외 습도 평균 표시 출력
+    Serial.println(avgHum);                               //실외 습도 평균 값 출력
+    Serial.print(F("Average Temperature (Sensor 1): "));  // 실외 온도 평균 표시 출력
+    Serial.println(avgTemp);                              // 실외 온도 평균 값 출력
+    Serial.print(F("Average Humidity (Sensor 2): "));     // 실내 습도 평균 표시 출력
+    Serial.println(avgHum2);                              // 실내 습도 평균 값 출력
+    Serial.print(F("Average Temperature (Sensor 2): "));  // 실내 온도 평균 표시 출력
+    Serial.println(avgTemp2);                             // 실내 온도 평균 값 출력
+    Serial.print(F("Average Light Level: "));             // 조도 평균 표시 출력
+    Serial.println(avgLight);                             // 조도 평균 값 출력
+    Serial.print(F("Average Rain Level: "));              // 빗물 감지 평균 표시 출력
+    Serial.println(avgRain);                              // 빗물 감지 평균 값 출력
+    Serial.print(F("Average PM2.5 Level: "));             // 미세먼지 농도 평균 표시 출력
+    Serial.println(avgPM25);                              // 미세먼지 농도 평균 값 출력
 
-  delay(100);  //0.1초 동안 프로그램 일시 중지
-  // PDLC 제어
-  if (avgLight >= 50) {                    // 조도값이 50보다 크거나 같을 경우
-    for (pos = 130; pos >= 0; pos -= 1) {  // 65도에서 0도까지 이동
-      myservo.write(pos);                  // 서보를 'pos' 위치로 이동
-      break;                               // 서보가 위치에 도달할 때까지 15ms 대기
+    delay(100);  //0.1초 동안 프로그램 일시 중지
+    // PDLC 제어
+    if (avgLight >= 50) {                   //50보다 조도값이 크거나 같을 경우
+      for (pos = 130; pos >= 0; pos -= 1) {  // 65도에서 0도까지 이동
+        myservo.write(pos);                 // 서보를 'pos' 위치로 이동
+        break;                              // 서보가 위치에 도달할 때까지 15ms 대기
+      }
+    } else {                                //50보다 조도값이 작을 경우
+      for (pos = 0; pos <= 65; pos += 1) {  // 0도에서 65도까지 이동
+        myservo.write(pos);                 // 서보를 'pos' 위치로 이동
+        break;                              // 서보가 위치에 도달할 때까지 15ms 대기
+      }
     }
+    controlServoBasedOnAverage(avgTemp, avgHum, avgTemp2, avgHum2);  // 평균 값에 따라 서보 제어
 
-  } else if (avgLight < 50) {             // 조도값이 50보다 작을 경우
-    for (pos = 0; pos <= 65; pos += 1) {  // 0도에서 65도까지 이동
-      myservo.write(pos);                 // 서보를 'pos' 위치로 이동
-      break;                              // 서보가 위치에 도달할 때까지 15ms 대기
-    }
+    currentIndex = 0;  // 인덱스 재설정을 위해 0으로 초기화
   }
-
-  controlServoBasedOnAverage(avgTemp, avgHum, avgTemp2, avgHum2);  // 평균 값에 따라 서보 제어
-
-  currentIndex = 0;  // 인덱스 재설정을 위해 0으로 초기화
-}
