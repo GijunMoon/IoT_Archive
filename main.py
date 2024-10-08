@@ -166,21 +166,7 @@ def index():
 
     if request.method == 'POST':
         button_action = request.form.get('button')
-        if button_action == 'monitor':
-            return render_template('main.html')
-        elif button_action == 'set':
-            return render_template('set.html')
-        elif button_action == 'door':
-            return render_template('door.html')
-        elif button_action == 'door':
-            return render_template('door.html')
-        elif button_action == 'weather':
-            return render_template('weather.html')
-        elif button_action == 'camera':
-            return render_template('camera.html')
-        elif button_action == 'video':
-            return render_template('video.html')
-        elif button_action == 'Y':
+        if button_action == 'Y':
             return render_template('setting.html')
         elif button_action == 'N':
             serial_write(data='n')
@@ -216,6 +202,40 @@ def index():
         'pm': request.args.get('pm', '')
     }
     return render_template('main.html', updated_settings=updated_settings)
+
+@app.route('/set', methods=['GET', 'POST'])
+def set_():
+    if request.method == 'POST':
+        button_action = request.form.get('button')
+        if button_action == 'Y':
+            return render_template('setting.html')
+        return jsonify(success=True)
+    
+    updated_settings = {
+        'humidity': request.args.get('humidity', ''),
+        'hot_temperature': request.args.get('hot_temperature', ''),
+        'cold_temperature': request.args.get('cold_temperature', ''),
+        'indoor_light': request.args.get('indoor_light', ''),
+        'pm': request.args.get('pm', '')
+    }
+    return render_template('main.html', updated_settings=updated_settings)
+
+@app.route('/door', methods=['GET', 'POST'])
+def door_():
+    return render_template('door.html')
+
+@app.route('/weather', methods=['GET', 'POST'])
+def door_():
+    return render_template('weather.html')
+
+@app.route('/camera', methods=['GET', 'POST'])
+def door_():
+    return render_template('camera.html')
+
+@app.route('/video', methods=['GET', 'POST'])
+def door_():
+    return render_template('video.html')
+
 
 @app.route('/settings', methods=['POST'])
 def settings():
