@@ -118,22 +118,18 @@ def process_10min_data(data):
                 sensor_data['discomfort_index_1'] = line.split(':')[1].strip()
             elif line.startswith("10 minute average discomfort index 2:"):
                 sensor_data['discomfort_index_2'] = line.split(':')[1].strip()
-            
-            # 숫자 인식 및 창문 제어
-            if line.isdigit():  # 숫자인지 확인
-                command = int(line)
-                if command == 5:
-                    print("Command received: 5 - Opening door.")
-                    door_control("open")
-                    sensor_data['door_status'] = "door Opened"
-                elif command == 6:
-                    print("Command received: 6 - Closing door.")
-                    door_control("close")
-                    sensor_data['door_status'] = "door Closed"
-                elif command == 7:
-                    print("Command received: 7 - Setting door to neutral.")
-                    actuator.setMotor(CH1, 100, STOP)
-                    sensor_data['door_status'] = "door Neutral"
+            elif line.startswith("Door: Opened"):
+                print("Door Open")
+                door_control("open")
+                sensor_data['door_status'] = "door Opened"
+            elif line.startswith("Door: Closed"):
+                print("Door Close")
+                door_control("close")
+                sensor_data['door_status'] = "door Closed"
+            elif line.startswith("Door: Neutral"):
+                print("Door Neutral")
+                actuator.setMotor(CH1, 100, STOP)
+                sensor_data['door_status'] = "door Neutral"
 
     except Exception as e:
         print(f"10분 데이터 처리 오류: {e}")
