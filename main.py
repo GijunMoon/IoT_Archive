@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, redirect, url_for, jsonify, R
 import serial
 import threading
 import time
+import asyncio
 from datetime import datetime
 from threading import Lock
 import sources.weather as weather
@@ -119,22 +120,25 @@ def process_10min_data(data):
             elif line.startswith("10 minute average discomfort index 2:"):
                 sensor_data['discomfort_index_2'] = line.split(':')[1].strip()
             elif line.startswith("Door: Opened"):
-                print("Door Open")
+                print("Door Open을 받았음 명령 수행 대기중")
+                asyncio.sleep(5)
                 door_control("open")
                 sensor_data['door_status'] = "door Opened"
             elif line.startswith("Door: Closed"):
-                print("Door Close")
+                print("Door Close을 받았음 명령 수행 대기중")
+                asyncio.sleep(5)
                 door_control("close")
                 sensor_data['door_status'] = "door Closed"
             elif line.startswith("Door: Neutral"):
-                print("Door Neutral")
+                print("Door Neutral을 받았음 명령 수행 대기중")
+                asyncio.sleep(5)
                 actuator.setMotor(CH1, 100, STOP)
                 sensor_data['door_status'] = "door Neutral"
 
     except Exception as e:
         print(f"10분 데이터 처리 오류: {e}")
 
-        
+
 # 백그라운드 스레드에서 시리얼 읽기 함수 시작
 thread = threading.Thread(target=serial_read, daemon=True)
 thread.start()
