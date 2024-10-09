@@ -1,0 +1,348 @@
+import asyncio
+import serial_asyncio #pip install pyserial-asyncio
+from flask import Flask, request, render_template, redirect, url_for, jsonify, Response
+from flask_caching import Cache #pip install flask_caching
+from datetime import datetime
+from threading import Lock
+import re
+import time
+import sources.weather as weather
+import sources.read_csv as CAMdata
+import sources.camera as CAMwrite
+import sources.actuator as actuator
+import sources.mse as mse
+
+SERIAL_PORT = '/dev/ttyACM0'
+BAUD_RATE = 9600
+
+STOP  = 0
+OPEN  = 1
+CLOSE = 2
+
+CH1 = 0
+
+# 전역 변수로 센서 데이터를 저장하기 위한 딕셔너리
+sensor_data = {
+    'humidity_1': '50.0',
+    'temperature_1': '26',
+    'humidity_2': 'N/A',
+    'temperature_2': '24.0',
+    'light_level': '400',
+    'rain_level': 'N/A',
+    'pm2_5': '81',
+    'discomfort_index_1': 'N/A',
+    'discomfort_index_2': 'N/A',
+    'door_status': 'door Closed',
+    'status': ''
+}
+
+open_time = None
+close_time = None
+
+# Lock 객체 생성
+data_lock = Lock()
+
+class SerialReader(asyncio.Protocol):
+    def __init__(self):
+        self.buffer = ''
+        self.transport = None
+
+    def connection_made(self, transport):
+        self.transport = transport
+
+    def write_data(self, data):
+        """Send data to the serial port."""
+        if self.transport is not None:
+            print(f"Arduino로 전송: {data}")
+            self.transport.write(data.encode())
+
+    def data_received(self, data):
+        self.buffer += data.decode('utf-8')
+        if '\n' in self.buffer:
+            lines = self.buffer.split('\n')
+            for line in lines[:-1]:
+                print(f"Arduino에서 받은 데이터: {line.strip()}")
+                with data_lock:
+                    if "------------10 minutes have passed.------------" in line:
+                        process_10min_data(line.strip())
+                    else:
+                        process_sensor_data(line.strip())
+            self.buffer = lines[-1]
+
+def process_sensor_data(data):
+    """실시간 센서 데이터를 가공하여 전역 변수에 저장."""
+    global sensor_data
+    try:
+        pattern = re.compile(r"""
+            Humidity\s1:\s(?P<humidity_1>\d+\.?\d*)|
+            Temperature\s1:\s(?P<temperature_1>\d+\.?\d*)|
+            Humidity\s2:\s(?P<humidity_2>\d+\.?\d*)|
+            Temperature\s2:\s(?P<temperature_2>\d+\.?\d*)|
+            Light\sLevel:\s(?P<light_level>\d+)| 
+            Rain\sLevel:\s(?P<rain_level>\w+)| 
+            PM2\.5\sLevel:\s(?P<pm2_5>\d+)| 
+            Discomfort\sIndex\s1:\s(?P<discomfort_index_1>\d+\.?\d*)| 
+            Discomfort\sIndex\s2:\s(?P<discomfort_index_2>\d+\.?\d*)|
+            Door:\s(?P<door_status>\w+)| 
+            (?P<status>comfortable|good|Rain|Dark)
+        """, re.VERBOSE)
+
+        matches = pattern.finditer(data)
+        with data_lock:
+            for match in matches:
+                for key, value in match.groupdict().items():
+                    if value is not None:
+                        sensor_data[key] = value.strip()
+    except Exception as e:
+        print(f"데이터 처리 오류: {e}")
+
+def process_10min_data(data):
+    """10분 경과 시 수신되는 데이터를 가공하여 전역 변수에 저장."""
+    global sensor_data
+    try:
+        pattern = re.compile(r"""
+            Average\sHumidity\s\(Sensor\s1\):\s(?P<humidity_1>\d+\.?\d*)|
+            Average\sTemperature\s\(Sensor\s1\):\s(?P<temperature_1>\d+\.?\d*)|
+            Average\sHumidity\s\(Sensor\s2\):\s(?P<humidity_2>\d+\.?\d*)|
+            Average\sTemperature\s\(Sensor\s2\):\s(?P<temperature_2>\d+\.?\d*)|
+            Average\sLight\sLevel:\s(?P<light_level>\d+)| 
+            Average\sRain\sLevel:\s(?P<rain_level>\w+)| 
+            Average\sPM2\.5\sLevel:\s(?P<pm2_5>\d+)| 
+            10\sminute\saverage\sdiscomfort\sindex\s1:\s(?P<discomfort_index_1>\d+\.?\d*)| 
+            10\sminute\saverage\sdiscomfort\sindex\s2:\s(?P<discomfort_index_2>\d+\.?\d*)
+        """, re.VERBOSE)
+
+        matches = pattern.finditer(data)
+        with data_lock:
+            for match in matches:
+                for key, value in match.groupdict().items():
+                    if value is not None:
+                        sensor_data[key] = value.strip()
+            
+            # 숫자 인식 및 창문 제어
+            command_pattern = re.compile(r"\b(?P<command>\d+)\b")
+            command_match = command_pattern.search(data)
+            if command_match:
+                command = int(command_match.group('command'))
+                if command == 5:
+                    print("Command received: 5 - Opening door.")
+                    door_control("open")
+                    sensor_data['door_status'] = "door Opened"
+                elif command == 6:
+                    print("Command received: 6 - Closing door.")
+                    door_control("close")
+                    sensor_data['door_status'] = "door Closed"
+                elif command == 7:
+                    print("Command received: 7 - Setting door to neutral.")
+                    actuator.setMotor(CH1, 100, STOP)
+                    sensor_data['door_status'] = "door Neutral"
+
+    except Exception as e:
+        print(f"10분 데이터 처리 오류: {e}")
+
+async def main():
+    loop = asyncio.get_running_loop()
+    transport, protocol = await serial_asyncio.create_serial_connection(
+        loop, SerialReader, SERIAL_PORT, baudrate=BAUD_RATE
+    )
+
+    # Store the protocol instance globally to use in other functions
+    global serial_protocol
+    serial_protocol = protocol
+
+    # Continue other async tasks...
+
+def serial_write(data=None):
+    """Arduino로 데이터를 전송하는 함수."""
+    if data is not None and serial_protocol is not None:
+        serial_protocol.write_data(data)
+
+# Flask app and other functions remain unchanged...
+
+
+def door_control(param):
+    if param == 'open':
+        serial_write(data='0')
+        time.sleep(3)
+        actuator.setMotor(CH1, 100, OPEN)
+        time.sleep(8)
+        serial_write(data='1')
+    elif param == 'close':
+        serial_write(data='0')
+        time.sleep(3)
+        actuator.setMotor(CH1, 100, CLOSE)
+        time.sleep(8)
+        serial_write(data='1')
+
+app = Flask(__name__, template_folder='templates')
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
+@app.route('/', methods=['GET', 'POST'])
+@cache.cached(timeout=60)
+def index():
+    global sensor_data
+
+    if request.method == 'POST':
+        button_action = request.form.get('button')
+        if button_action == 'Y':
+            return render_template('setting.html')
+        elif button_action == 'N':
+            serial_write(data='n')
+            return render_template('main.html')
+        elif button_action == 'OPEN':
+            door_control('open')
+            with data_lock:
+                sensor_data['door_status'] = "door Opened"
+        elif button_action == 'CLOSE':
+            door_control('close')
+            with data_lock:
+                sensor_data['door_status'] = "door Closed"
+        elif button_action == 'WEATHER':
+            weather_data = weather.proc_weather()
+            print(weather_data)
+            return jsonify(weather_data)
+        elif button_action == 'CAMdata':
+            print(CAMdata.view_csv())
+            cam_data = CAMdata.view_csv()
+            return jsonify(cam_data)
+        elif button_action == 'CAMwrite':
+            CAMwrite.startCAM()
+            
+        actuator.cleanup_gpio()
+
+        return jsonify(success=True)
+
+    updated_settings = {
+        'humidity': request.args.get('humidity', ''),
+        'hot_temperature': request.args.get('hot_temperature', ''),
+        'cold_temperature': request.args.get('cold_temperature', ''),
+        'indoor_light': request.args.get('indoor_light', ''),
+        'pm': request.args.get('pm', '')
+    }
+    return render_template('main.html', updated_settings=updated_settings)
+
+@app.route('/settings', methods=['POST'])
+def settings():
+    global open_time, close_time
+
+    humidity = request.form.get('humidity')
+    hot_temperature = request.form.get('hot_temperature')
+    cold_temperature = request.form.get('cold_temperature')
+    indoor_light = request.form.get('indoor_light')
+    pm = request.form.get('pm')
+    
+    open_time = request.form.get('open_time')
+    close_time = request.form.get('close_time')
+
+    print(f"Received settings - Humidity: {humidity}, Hot Temp: {hot_temperature}, Cold Temp: {cold_temperature}, Indoor Light: {indoor_light}, PM: {pm}, Open Time: {open_time}, Close Time: {close_time}")
+
+    try:
+        serial_write(data='y')
+        time.sleep(5)
+        serial_write(data=humidity)
+        time.sleep(1.5)
+        serial_write(data=hot_temperature)
+        time.sleep(1.5)
+        serial_write(data=cold_temperature)
+        time.sleep(1.5)
+        
+        pm25 = calculate_pm25(int(pm))
+        serial_write(data=str(pm25))
+        time.sleep(1.5)
+
+        serial_write(data=indoor_light)
+        time.sleep(1.5)
+    except Exception as e:
+        print(f"시리얼 통신 에러: {e}")
+
+    updated_settings = {
+        'humidity': humidity,
+        'hot_temperature': hot_temperature,
+        'cold_temperature': cold_temperature,
+        'indoor_light': indoor_light,
+        'pm': pm,
+        'open_time': open_time,
+        'close_time': close_time
+    }
+
+    print(f"Updated settings - {updated_settings}")
+    return redirect(url_for('index', **updated_settings))
+
+@app.route('/calibrate_sensor_data', methods=['GET'])
+def get_calibrated_sensor_data():
+    external_weather = weather.fetch_external_weather()
+    
+    with data_lock:
+        calibrated_data = mse.calibrate_sensor_data(sensor_data, external_weather)
+        
+    return jsonify(calibrated_data)
+
+
+def calculate_pm25(pm):
+    """PM 값을 기준으로 PM2.5 범위를 계산."""
+    if pm < 20:
+        return 20
+    elif pm < 80:
+        return 50
+    elif pm < 160:
+        return 100
+    else:
+        return 160
+
+@app.route('/get_weather_data', methods=['GET'])
+def get_weather_data():
+    weather_data = weather.proc_weather()
+    return jsonify(weather_data)
+
+@app.route('/get_sensor_data', methods=['GET'])
+def get_sensor_data():
+    """현재 메모리에 저장된 센서 데이터를 반환하는 엔드포인트."""
+    with data_lock:
+        return jsonify(sensor_data)
+    
+@app.route('/get_setting_data', methods=['GET'])
+@cache.cached(timeout=60)
+def get_setting_data():
+    """현재 메모리에 저장된 세팅 데이터를 반환하는 엔드포인트."""
+    with data_lock:
+        return jsonify(sensor_data)
+
+async def check_reservation_times():
+    """예약된 시간에 맞춰 창문을 여닫는 함수."""
+    global open_time, close_time
+    while True:
+        current_time = datetime.now().strftime("%H:%M")
+        
+        if open_time and current_time == open_time:
+            print(f"PDLC 창문을 {open_time}에 열었습니다.")
+            serial_write(data="3")
+
+        if close_time and current_time == close_time:
+            print(f"PDLC 창문을 {close_time}에 닫았습니다.")
+            serial_write(data="4")
+        
+        await asyncio.sleep(60)
+
+def gen(camera):
+    while True:
+        frame = camera.get_frame()
+        if frame is None:
+            continue
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(gen(CAMwrite.VideoCamera()),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/get_cam_data')
+def detect_data():
+    data = CAMdata.view_csv()
+    return jsonify(data)
+
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    loop.create_task(main())
+    loop.create_task(check_reservation_times())
+    app.run(host='0.0.0.0')
