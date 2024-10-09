@@ -240,8 +240,20 @@
         cursor: default;
       }
 
-      .highlight {
+      .highlight1 {
         background-color: #b3e5fc;
+      }
+
+      .highlight2 {
+        background-color: #73b984;
+      }
+
+      .highlight3 {
+        background-color: #ffeb3b;
+      }
+
+      .highlight4 {
+        background-color: #f44336;
       }
 
       .door-status {
@@ -374,13 +386,13 @@
               box.classList.remove("highlight");
             });
             if (pmValue < 30) {
-              document.getElementById("dust-btn-1").classList.add("highlight");
+              document.getElementById("dust-btn-1").classList.add("highlight1");
             } else if (pmValue >= 50 && pmValue < 80) {
-              document.getElementById("dust-btn-2").classList.add("highlight");
+              document.getElementById("dust-btn-2").classList.add("highlight2");
             } else if (pmValue >= 80 && pmValue < 150) {
-              document.getElementById("dust-btn-3").classList.add("highlight");
+              document.getElementById("dust-btn-3").classList.add("highlight3");
             } else if (pmValue >= 150) {
-              document.getElementById("dust-btn-4").classList.add("highlight");
+              document.getElementById("dust-btn-4").classList.add("highlight4");
             }
             // Update door status
             var doorStatus = data.door_status;
@@ -457,13 +469,13 @@
               box.classList.remove("highlight");
             });
             if (pmValue < 30) {
-              document.getElementById("dust-btn-1").classList.add("highlight");
+              document.getElementById("dust-btn-1").classList.add("highlight1");
             } else if (pmValue >= 50 && pmValue < 80) {
-              document.getElementById("dust-btn-2").classList.add("highlight");
+              document.getElementById("dust-btn-2").classList.add("highlight2");
             } else if (pmValue >= 80 && pmValue < 150) {
-              document.getElementById("dust-btn-3").classList.add("highlight");
+              document.getElementById("dust-btn-3").classList.add("highlight3");
             } else if (pmValue >= 150) {
-              document.getElementById("dust-btn-4").classList.add("highlight");
+              document.getElementById("dust-btn-4").classList.add("highlight4");
             }
 
             // Update door status
@@ -530,16 +542,16 @@
           10
         );
         document.querySelectorAll(".dust-box").forEach((box) => {
-          box.classList.remove("highlight");
+          box.classList.remove("highlight1, highlight2, highlight3, highlight4");
         });
         if (pmValue < 30) {
-          document.getElementById("dust-btn-1").classList.add("highlight");
+          document.getElementById("dust-btn-1").classList.add("highlight1");
         } else if (pmValue >= 50 && pmValue < 80) {
-          document.getElementById("dust-btn-2").classList.add("highlight");
+          document.getElementById("dust-btn-2").classList.add("highlight2");
         } else if (pmValue >= 80 && pmValue < 150) {
-          document.getElementById("dust-btn-3").classList.add("highlight");
+          document.getElementById("dust-btn-3").classList.add("highlight3");
         } else if (pmValue >= 150) {
-          document.getElementById("dust-btn-4").classList.add("highlight");
+          document.getElementById("dust-btn-4").classList.add("highlight4");
         }
       }
 
