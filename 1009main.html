@@ -383,7 +383,7 @@
             // Update PM2.5 boxes
             var pmValue = parseInt(data.pm2_5, 10);
             document.querySelectorAll(".dust-box").forEach((box) => {
-              box.classList.remove("highlight");
+              box.classList.remove("highlight1,highlight2,highlight3,highlight4");
             });
             if (pmValue < 30) {
               document.getElementById("dust-btn-1").classList.add("highlight1");
@@ -466,7 +466,7 @@
             // Update PM2.5 boxes
             var pmValue = parseInt(data.pm2_5, 10);
             document.querySelectorAll(".dust-box").forEach((box) => {
-              box.classList.remove("highlight");
+              box.classList.remove("highlight1,highlight2,highlight3,highlight4");
             });
             if (pmValue < 30) {
               document.getElementById("dust-btn-1").classList.add("highlight1");
