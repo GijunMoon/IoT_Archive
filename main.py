@@ -61,80 +61,54 @@ def serial_read():
 def process_sensor_data(data):
     """실시간 센서 데이터를 가공하여 전역 변수에 저장."""
     global sensor_data
-    try:
+    try: #외부습도/외부온도/실내습도/실내온도/조도 (밝기 문자열)/비(문자열/pm2.5 값/실외불쾌지수/실내불쾌지수/ 실내불쾌지수 상태(문자열)
         lines = data.split('\n')
-        for line in lines:
-            line = line.strip()
-            if line.startswith("Humidity 1:"):
-                sensor_data['humidity_1'] = line.split(':')[1].strip()
-            elif line.startswith("Temperature 1:"):
-                sensor_data['temperature_1'] = line.split(':')[1].strip()
-            elif line.startswith("Humidity 2:"):
-                sensor_data['humidity_2'] = line.split(':')[1].strip()
-            elif line.startswith("Temperature 2:"):
-                sensor_data['temperature_2'] = line.split(':')[1].strip()
-            elif line.startswith("Light Level:"):
-                sensor_data['light_level'] = line.split(':')[1].strip()
-            elif line.startswith("Rain Level:"):
-                sensor_data['rain_level'] = line.split(':')[1].strip()
-            elif line.startswith("PM2.5 Level:"):
-                sensor_data['pm2_5'] = line.split(':')[1].strip()
-            elif line.startswith("Discomfort Index 1:"):
-                sensor_data['discomfort_index_1'] = line.split(':')[1].strip()
-            elif line.startswith("Discomfort Index 2:"):
-                sensor_data['discomfort_index_2'] = line.split(':')[1].strip()
-            elif line.startswith("Door: Opened"):
-                sensor_data['door_status'] = "door Opened"
-            elif line.startswith("Door: Closed"):
-                sensor_data['door_status'] = "door Closed"
-            elif line.startswith("Door: Neutral"):
-                sensor_data['door_status'] = "door Neutral"
-            elif "comfortable" in line or "good" in line or "Rain" in line or "Dark" in line:
-                sensor_data['status'] = line
+        t = lines.split('/')
+        
+        sensor_data['humidity_1'] = t[0]
+        sensor_data['temperature_1'] = t[1]
+        sensor_data['humidity_2'] = t[2]
+        sensor_data['temperature_2'] = t[3]
+        sensor_data['light_level'] = t[4]
+        sensor_data['rain_level'] = t[5]
+        sensor_data['pm2_5'] = t[6]
+        sensor_data['discomfort_index_1'] = t[7]
+        sensor_data['discomfort_index_2'] = t[8]
+        sensor_data['status'] = t[9]
+        if(len(t) < 10):
+            pass
+        else:
+            sensor_data['door_status'] = t[10]
     except Exception as e:
         print(f"데이터 처리 오류: {e}")
 
 def process_10min_data(data):
     """10분 경과 시 수신되는 데이터를 가공하여 전역 변수에 저장."""
     global sensor_data
-    try:
+    try: #외부습도/외부온도/실내습도/실내온도/조도 (밝기 문자열)/비(문자열/pm2.5 값/실외불쾌지수/실내불쾌지수/ 실내불쾌지수 상태(문자열)
         lines = data.split('\n')
-        for line in lines:
-            line = line.strip()
-            if line.startswith("Average Humidity (Sensor 1):"):
-                sensor_data['humidity_1'] = line.split(':')[1].strip()
-            elif line.startswith("Average Temperature (Sensor 1):"):
-                sensor_data['temperature_1'] = line.split(':')[1].strip()
-            elif line.startswith("Average Humidity (Sensor 2):"):
-                sensor_data['humidity_2'] = line.split(':')[1].strip()
-            elif line.startswith("Average Temperature (Sensor 2):"):
-                sensor_data['temperature_2'] = line.split(':')[1].strip()
-            elif line.startswith("Average Light Level:"):
-                sensor_data['light_level'] = line.split(':')[1].strip()
-            elif line.startswith("Average Rain Level:"):
-                sensor_data['rain_level'] = line.split(':')[1].strip()
-            elif line.startswith("Average PM2.5 Level:"):
-                sensor_data['pm2_5'] = line.split(':')[1].strip()
-            elif line.startswith("10 minute average discomfort index 1:"):
-                sensor_data['discomfort_index_1'] = line.split(':')[1].strip()
-            elif line.startswith("10 minute average discomfort index 2:"):
-                sensor_data['discomfort_index_2'] = line.split(':')[1].strip()
-            elif line.startswith("Door: Opened"):
-                print("Door Open을 받았음 명령 수행 대기중")
-                asyncio.sleep(5)
-                door_control("open")
-                sensor_data['door_status'] = "door Opened"
-            elif line.startswith("Door: Closed"):
-                print("Door Close을 받았음 명령 수행 대기중")
-                asyncio.sleep(5)
-                door_control("close")
-                sensor_data['door_status'] = "door Closed"
-            elif line.startswith("Door: Neutral"):
-                print("Door Neutral을 받았음 명령 수행 대기중")
-                asyncio.sleep(5)
-                actuator.setMotor(CH1, 100, STOP)
-                sensor_data['door_status'] = "door Neutral"
-
+        t = lines.split('/')
+        
+        sensor_data['humidity_1'] = t[0]
+        sensor_data['temperature_1'] = t[1]
+        sensor_data['humidity_2'] = t[2]
+        sensor_data['temperature_2'] = t[3]
+        sensor_data['light_level'] = t[4]
+        sensor_data['rain_level'] = t[5]
+        sensor_data['pm2_5'] = t[6]
+        sensor_data['discomfort_index_1'] = t[7]
+        sensor_data['discomfort_index_2'] = t[8]
+        sensor_data['status'] = t[9]
+        if(len(t) < 10):
+            pass
+        else:
+            sensor_data['door_status'] = t[10]
+            if (t[10] == '5'):
+                door_control('open')
+            elif (t[10] == '6'):
+                door_control('close')
+            elif (t[10] == '7'):
+                pass
     except Exception as e:
         print(f"10분 데이터 처리 오류: {e}")
 
