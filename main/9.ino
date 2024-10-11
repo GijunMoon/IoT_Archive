@@ -259,7 +259,7 @@ void printSensorReadings() {  //아두이노 센서 값 출력 함수 정의
     discomfortIndex1P = "It's very comfortable outside!";      //"매우 쾌적함" 출력
   }
   //Serial.print(F("Discomfort Index 1: "));  //현재 실외 불쾌지수
-  Serial.print(discomfortIndex1P, 2);  //실외 불쾌지수 소수점 이하 2자리까지 출력
+  Serial.print(discomfortIndex1P);  //실외 불쾌지수 소수점 이하 2자리까지 출력
   Serial.print(F(","));
 
 
@@ -274,7 +274,7 @@ void printSensorReadings() {  //아두이노 센서 값 출력 함수 정의
     discomfortIndex2P = "The interior is very comfort!\n";       //"매우 쾌적함" 출력
   }
   //  Serial.print(F("Discomfort Index 2: "));  //현재 실내 불쾌지수
-  Serial.println(discomfortIndex2P, 2);  //실내 불쾌지수 소수점 이하 2자리까지 출력
+  Serial.println(discomfortIndex2P);  //실내 불쾌지수 소수점 이하 2자리까지 출력
   Serial.println(F(","));
 }
 
