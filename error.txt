@@ -11,6 +11,8 @@ Arduino에서 받은 데이터: 42.9,21.6,43.4,21.5,Very Bright,No Rain,dust ver
 0: 480x800 (no detections), 8969.2ms
 Speed: 35.9ms preprocess, 8969.2ms inference, 5.7ms postprocess per image at shape (1, 3, 480, 800)
 127.0.0.1 - - [12/Oct/2024 15:25:11] "GET /video_feed HTTP/1.1" 200 -
+
+(((현재 main.py코드 오류)))
 -----------------------------
 
 
@@ -42,9 +44,10 @@ def process_sensor_data(data):
     except Exception as e:
         print(f"데이터 처리 오류: {e}")
 
-데이터 처리 오류: list index out of range
 
---------------------------------------------------------------
+(((한번 수정한 코드))))
+데이터 처리 오류: list index out of range - 오류발생
+--------------------------------------------------------------------------
 def process_sensor_data(data):
     """실시간 센서 데이터를 가공하여 전역 변수에 저장."""
     global sensor_data
@@ -81,7 +84,7 @@ def process_sensor_data(data):
 
 
 
-
+(((두번째 수정 코드 오류)))
 Arduino에서 받은 데이터: 43.0,21.6,43.3,21.5,Very Bright,No Rain,dust very good,very comfort discomfort OUT,very comfort discomfort IN
 잘못된 데이터 형식: 43.0,21.6,43.3,21.5,Very Bright,No Rain,dust very good,very comfort discomfort OUT,very comfort discomfort IN
 127.0.0.1 - - [12/Oct/2024 15:22:58] "GET /get_sensor_data HTTP/1.1" 200 -
