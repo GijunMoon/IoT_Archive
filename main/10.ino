@@ -169,7 +169,7 @@ void processUserInput() {                         //설정 재입력 함수 정�
     Serial.println(inputCommand);         //inputCommand변수 출력
 
     if (inputCommand.equalsIgnoreCase("y")) {  //설정이라는 단어를 입력받은 경우
-      delay(1000);                             //1초 동안 프로그램 일시 중지
+      delay(500);                             //1초 동안 프로그램 일시 중지
       // 초기 상태로 복귀 설정
       currentIndex = 0;     //currrentIndex 0으로 초기화
       lastSampleTime = 0;   //lastSampleTime 0으로 초기화
@@ -275,6 +275,7 @@ void printSensorReadings() {  //아두이노 센서 값 출력 함수 정의
   }
   //  Serial.print(F("Discomfort Index 2: "));  //현재 실내 불쾌지수
   Serial.println(discomfortIndex2P);  //실내 불쾌지수 소수점 이하 2자리까지 출력
+  delay(200);
 }
 
 
