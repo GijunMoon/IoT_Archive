@@ -53,7 +53,7 @@ def serial_read():
             data = ser.readline().decode('utf-8').strip()
             print(f"Arduino에서 받은 데이터: {data}")
             with data_lock:
-                if "------------10 minutes have passed.------------" in data:
+                if "10avg" in data:
                     process_10min_data(data)
                 else:
                     process_sensor_data(data)
@@ -63,7 +63,7 @@ def process_sensor_data(data):
     global sensor_data
     try: #외부습도/외부온도/실내습도/실내온도/조도 (밝기 문자열)/비(문자열/pm2.5 값/실외불쾌지수/실내불쾌지수/ 실내불쾌지수 상태(문자열)
         lines = data.split('\n')
-        t = lines.split('/')
+        t = lines.split(',')
         
         sensor_data['humidity_1'] = t[0]
         sensor_data['temperature_1'] = t[1]
@@ -87,7 +87,7 @@ def process_10min_data(data):
     global sensor_data
     try: #외부습도/외부온도/실내습도/실내온도/조도 (밝기 문자열)/비(문자열/pm2.5 값/실외불쾌지수/실내불쾌지수/ 실내불쾌지수 상태(문자열)
         lines = data.split('\n')
-        t = lines.split('/')
+        t = lines.split(',')
         
         sensor_data['humidity_1'] = t[0]
         sensor_data['temperature_1'] = t[1]
@@ -105,10 +105,12 @@ def process_10min_data(data):
             sensor_data['door_status'] = t[10]
             if (t[10] == '5'):
                 door_control('open')
+                sensor_data['door_status'] = 'door Opened'
             elif (t[10] == '6'):
                 door_control('close')
+                sensor_data['door_status'] = 'door Closed'
             elif (t[10] == '7'):
-                pass
+                sensor_data['door_status'] = 'door Neutral'
     except Exception as e:
         print(f"10분 데이터 처리 오류: {e}")
 
