@@ -74,11 +74,6 @@ def process_sensor_data(data):
         sensor_data['pm2_5'] = t[6]
         sensor_data['discomfort_index_1'] = t[7]
         sensor_data['discomfort_index_2'] = t[8]
-        sensor_data['status'] = t[9]
-        if(len(t) < 10):
-            pass
-        else:
-            sensor_data['door_status'] = t[10]
     except Exception as e:
         print(f"데이터 처리 오류: {e}")
 
@@ -89,27 +84,25 @@ def process_10min_data(data):
         lines = data.split('\n')
         t = lines.split(',')
         
-        sensor_data['humidity_1'] = t[0]
-        sensor_data['temperature_1'] = t[1]
-        sensor_data['humidity_2'] = t[2]
-        sensor_data['temperature_2'] = t[3]
-        sensor_data['light_level'] = t[4]
-        sensor_data['rain_level'] = t[5]
-        sensor_data['pm2_5'] = t[6]
-        sensor_data['discomfort_index_1'] = t[7]
-        sensor_data['discomfort_index_2'] = t[8]
-        sensor_data['status'] = t[9]
-        if(len(t) < 10):
+        sensor_data['humidity_1'] = t[1]
+        sensor_data['temperature_1'] = t[2]
+        sensor_data['humidity_2'] = t[3]
+        sensor_data['temperature_2'] = t[4]
+        sensor_data['light_level'] = t[5]
+        sensor_data['rain_level'] = t[6]
+        sensor_data['pm2_5'] = t[7]
+
+        if(len(t) < 9):
             pass
         else:
-            sensor_data['door_status'] = t[10]
-            if (t[10] == '5'):
+            sensor_data['door_status'] = t[8]
+            if (t[8] == '5'):
                 door_control('open')
                 sensor_data['door_status'] = 'door Opened'
-            elif (t[10] == '6'):
+            elif (t[8] == '6'):
                 door_control('close')
                 sensor_data['door_status'] = 'door Closed'
-            elif (t[10] == '7'):
+            elif (t[8] == '7'):
                 sensor_data['door_status'] = 'door Neutral'
     except Exception as e:
         print(f"10분 데이터 처리 오류: {e}")
