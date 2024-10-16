@@ -63,6 +63,12 @@ def calibrate_sensor_data(sensor_data, external_weather):
     
     # Prepare new data for prediction
     if all(k in external_weather for k in ['temperature', 'humidity', 'pm_25']):
+        if sensor_data['pm2_5'] == 'dust very good':
+            sensor_data['pm2_5'] = '15'
+        if sensor_data['pm2_5'] == 'dust normal':
+            sensor_data['pm2_5'] = '55'
+        if sensor_data['pm2_5'] == 'dust bad':
+            sensor_data['pm2_5'] = '115'
         X_new = np.array([[float(sensor_data['temperature_1'][:4]), float(sensor_data['humidity_1'][:4]), float(sensor_data['pm2_5'])]])
         X_new_scaled = scaler.transform(X_new)  # Scale the new data
         
