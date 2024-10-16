@@ -62,8 +62,7 @@ def process_sensor_data(data):
     """실시간 센서 데이터를 가공하여 전역 변수에 저장."""
     global sensor_data
     try: #외부습도/외부온도/실내습도/실내온도/조도 (밝기 문자열)/비(문자열/pm2.5 값/실외불쾌지수/실내불쾌지수/ 실내불쾌지수 상태(문자열)
-        lines = data.split('\n')
-        t = lines.split(',')
+        t = data.split(',')
         
         sensor_data['humidity_1'] = t[0]
         sensor_data['temperature_1'] = t[1]
@@ -81,8 +80,7 @@ def process_10min_data(data):
     """10분 경과 시 수신되는 데이터를 가공하여 전역 변수에 저장."""
     global sensor_data
     try: #외부습도/외부온도/실내습도/실내온도/조도 (밝기 문자열)/비(문자열/pm2.5 값/실외불쾌지수/실내불쾌지수/ 실내불쾌지수 상태(문자열)
-        lines = data.split('\n')
-        t = lines.split(',')
+        t = data.split(',')
         
         sensor_data['humidity_1'] = t[1]
         sensor_data['temperature_1'] = t[2]
