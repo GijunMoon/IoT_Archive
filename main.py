@@ -40,6 +40,16 @@ sensor_data = {
     'status': ''
 }
 
+updated_settings = {
+    'humidity': '80',
+    'hot_temperature': '26',
+    'cold_temperature': '24',
+    'indoor_light': '40',
+    'pm': '150'
+}
+
+isSet = False
+
 open_time = None
 close_time = None
 
@@ -57,6 +67,10 @@ def serial_read():
                     process_10min_data(data)
                 else:
                     process_sensor_data(data)
+                if "Received value: 1" in data:
+                    serial_write(data='1')
+                    time.sleep(2)
+                    serial_write(data='1')
 
 def process_sensor_data(data):
     """실시간 센서 데이터를 가공하여 전역 변수에 저장."""
@@ -73,8 +87,11 @@ def process_sensor_data(data):
         sensor_data['pm2_5'] = t[6]
         sensor_data['discomfort_index_1'] = t[7]
         sensor_data['discomfort_index_2'] = t[8]
+        
+        print(sensor_data)
     except Exception as e:
-        print(f"데이터 처리 오류: {e}")
+        pass
+        #print(f"데이터 처리 오류: {e}")
 
 def process_10min_data(data):
     """10분 경과 시 수신되는 데이터를 가공하여 전역 변수에 저장."""
@@ -90,17 +107,20 @@ def process_10min_data(data):
         sensor_data['rain_level'] = t[6]
         sensor_data['pm2_5'] = t[7]
 
-        if(len(t) < 9):
+        if(len(t) < 8):
             pass
         else:
-            sensor_data['door_status'] = t[8]
-            if (t[8] == '5'):
+            sensor_data['door_status'] = t[10]
+            if (t[10] == '5'):
                 door_control('open')
+                print("open")
                 sensor_data['door_status'] = 'door Opened'
-            elif (t[8] == '6'):
+            elif (t[10] == '6'):
                 door_control('close')
+                print("close")
                 sensor_data['door_status'] = 'door Closed'
-            elif (t[8] == '7'):
+            elif (t[10] == '7'):
+                print("neutral")
                 sensor_data['door_status'] = 'door Neutral'
     except Exception as e:
         print(f"10분 데이터 처리 오류: {e}")
@@ -113,11 +133,15 @@ thread.start()
 def door_control(param):
     if param == 'open':
         serial_write(data='0')
+        time.sleep(2)
+        serial_write(data='0')
         time.sleep(3)
         actuator.setMotor(CH1, 100, OPEN)
         time.sleep(8)
         serial_write(data='1')
     elif param == 'close':
+        serial_write(data='0')
+        time.sleep(2)
         serial_write(data='0')
         time.sleep(3)
         actuator.setMotor(CH1, 100, CLOSE)
@@ -129,6 +153,7 @@ app = Flask(__name__, template_folder='templates')
 @app.route('/', methods=['GET', 'POST'])
 def index():
     global sensor_data
+    global updated_settings
 
     if request.method == 'POST':
         button_action = request.form.get('button')
@@ -161,18 +186,21 @@ def index():
         return jsonify(success=True)
 
     updated_settings = {
-        'humidity': request.args.get('humidity', ''),
-        'hot_temperature': request.args.get('hot_temperature', ''),
-        'cold_temperature': request.args.get('cold_temperature', ''),
-        'indoor_light': request.args.get('indoor_light', ''),
-        'pm': request.args.get('pm', '')
+        'humidity': request.args.get('humidity', '80'),
+        'hot_temperature': request.args.get('hot_temperature', '26'),
+        'cold_temperature': request.args.get('cold_temperature', '24'),
+        'indoor_light': request.args.get('indoor_light', '40'),
+        'pm': request.args.get('pm', '150')
     }
     return render_template('main.html', updated_settings=updated_settings)
 
 @app.route('/settings', methods=['POST'])
 def settings():
     global open_time, close_time
+    global updated_settings
+    global isSet
 
+    # Fetch form data and print for debugging
     humidity = request.form.get('humidity')
     hot_temperature = request.form.get('hot_temperature')
     cold_temperature = request.form.get('cold_temperature')
@@ -181,28 +209,55 @@ def settings():
     
     open_time = request.form.get('open_time')
     close_time = request.form.get('close_time')
+    
+    if request.method == 'POST':
+        button_action = request.form.get('button')
+        if button_action == 'Y':
+            return render_template('setting.html')
 
     print(f"Received settings - Humidity: {humidity}, Hot Temp: {hot_temperature}, Cold Temp: {cold_temperature}, Indoor Light: {indoor_light}, PM: {pm}, Open Time: {open_time}, Close Time: {close_time}")
 
     try:
-        serial_write(data='y')
-        time.sleep(5)
-        serial_write(data=humidity)
-        time.sleep(1.5)
-        serial_write(data=hot_temperature)
-        time.sleep(1.5)
-        serial_write(data=cold_temperature)
-        time.sleep(1.5)
+		if isSet == False:
+            serial_write(data='y')
+            time.sleep(10)  # Ensure enough time for processing
+            serial_write(data=humidity)
+            time.sleep(2)
+            serial_write(data=hot_temperature)
+            time.sleep(2)
+            serial_write(data=cold_temperature)
+            time.sleep(2)
         
-        pm25 = calculate_pm25(int(pm))
-        serial_write(data=str(pm25))
-        time.sleep(1.5)
+            pm25 = calculate_pm25(int(pm))
+            serial_write(data=str(pm25))
+            time.sleep(2)
 
-        serial_write(data=indoor_light)
-        time.sleep(1.5)
+            serial_write(data=indoor_light)
+            time.sleep(1.5)
+            isSet = True
+        else:
+            serial_write(data='y')
+            time.sleep(5)
+            serial_write(data='y')
+            time.sleep(10)  # Ensure enough time for processing
+            serial_write(data=humidity)
+            time.sleep(2)
+            serial_write(data=hot_temperature)
+            time.sleep(2)
+            serial_write(data=cold_temperature)
+            time.sleep(2)
+        
+            pm25 = calculate_pm25(int(pm))
+            serial_write(data=str(pm25))
+            time.sleep(2)
+
+            serial_write(data=indoor_light)
+            time.sleep(1.5)
+            isSet = True			
     except Exception as e:
-        print(f"시리얼 통신 에러: {e}")
+        print(f"Serial communication error: {e}")
 
+    # Update settings
     updated_settings = {
         'humidity': humidity,
         'hot_temperature': hot_temperature,
@@ -214,7 +269,11 @@ def settings():
     }
 
     print(f"Updated settings - {updated_settings}")
-    return redirect(url_for('index', **updated_settings))
+
+    # Fetch latest sensor data after settings update
+    #sensor_data = get_sensor_data().json
+
+    return render_template('main.html', updated_settings=updated_settings)
 
 @app.route('/calibrate_sensor_data', methods=['GET'])
 def get_calibrated_sensor_data():
@@ -258,7 +317,7 @@ def get_sensor_data():
 def get_setting_data():
     """현재 메모리에 저장된 세팅 데이터를 반환하는 엔드포인트."""
     with data_lock:
-        return jsonify(sensor_data)
+        return jsonify(updated_settings)
 
 def check_reservation_times():
     """예약된 시간에 맞춰 창문을 여닫는 함수."""
