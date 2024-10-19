@@ -218,7 +218,7 @@ def settings():
     print(f"Received settings - Humidity: {humidity}, Hot Temp: {hot_temperature}, Cold Temp: {cold_temperature}, Indoor Light: {indoor_light}, PM: {pm}, Open Time: {open_time}, Close Time: {close_time}")
 
     try:
-		if isSet == False:
+        if isSet == False:
             serial_write(data='y')
             time.sleep(10)  # Ensure enough time for processing
             serial_write(data=humidity)
