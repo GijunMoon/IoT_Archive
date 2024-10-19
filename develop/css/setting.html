@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Window Settings</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 26%; /* 컨테이너의 너비를 설정 */
+            text-align: left; /* 텍스트를 왼쪽으로 정렬 */
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap; /* Allows items to wrap onto the next line if space is insufficient */
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .form-row label {
+            white-space: nowrap; /* Prevents the label from wrapping and ensures it stays on one line */
+            overflow: hidden; /* Ensures text doesn't overflow its container */
+            text-overflow: ellipsis; /* Adds an ellipsis if the text overflows */
+            margin-right: 10px;
+            flex: 1 0 100;
+        }
+        .form-row input, .form-row span {
+         flex: 2; /* 입력 필드의 너비를 라벨보다 넓게 설정 */
+        width: 50%; /* 입력 필드의 너비를 50%로 조정 */
+        }
+
+
+        button {
+            width: 50%;
+            padding: 10px;
+            margin-top: 20px; /* 버튼 위의 여백 */
+            background-color: #DDA0DD;
+            border: none;
+        }
+        .dust-button-container {
+            display: flex;
+            align-items: center; /* This will ensure buttons are vertically centered with the label */
+            flex-wrap: 100; /* Allows buttons to wrap if needed */
+        }
+        .dust-button {
+            flex-grow: 1; /* Allows the button to grow and fill the space */
+            margin: 5px;
+            padding: 8px 10px; /* Ensures padding is consistent */
+            text-align: center; /* Centers the text within the button */
+            border-radius: 5px;
+            border: none;
+            min-width: 80px; /* Sets a minimum width for each button */
+            background-color: #f8f8f8; /* Default light background for better visibility */
+            transition: background-color 0.3s;
+        }
+        #dust-btn-3 {
+        background-color: #FFB6C1; /* Light Pink */
+        }
+
+        #dust-btn-2 {
+        background-color: #90EE90; /* Light Green */
+        }
+
+        #dust-btn-1 {
+        background-color: #ADD8E6; /* Light Blue */
+        }
+
+        #dust-btn-4 {
+        background-color: #FFFFE0; /* Light Yellow */
+        }
+
+        .selected {
+        border: 2px solid #000000; /* Adds a black border to the selected button */
+        }
+
+        h1 {
+        text-align: center;
+        }
+
+
+        
+
+       
+
+     
+       
+
+
+
+
+        
+
+
+    </style>
+    <script>
+        function selectDustLevel(level) {
+            document.getElementById('pm').value = level;
+            // Remove selected class from all dust buttons
+            var buttons = document.querySelectorAll('.dust-button');
+            buttons.forEach(function(button) {
+                button.classList.remove('selected');
+            });
+            // Add selected class to the clicked button
+            document.getElementById('dust-btn-' + level).classList.add('selected');
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>환경 설정 변경</h1>
+        <form method="POST" action="/settings">
+            <div class="form-row">
+                <label for="humidity"><strong>습도 설정:</strong></label>
+                <input type="number" name="humidity" id="humidity" min="0" max="100">
+                <span>%</span>
+            </div>
+            <div class="form-row">
+                <label for="hot_temperature"><strong>더운 온도 설정:</strong></label>
+                <input type="number" name="hot_temperature" id="hot_temperature" min="0" max="50">
+                <span>°C</span>
+            </div>
+            <div class="form-row">
+                <label for="cold_temperature"><strong>추운 온도 설정:</strong></label>
+                <input type="number" name="cold_temperature" id="cold_temperature" min="-30" max="30">
+                <span>°C</span>
+            </div>
+            <div class="form-row">
+                <label for="indoor_light"><strong>실내 조도 설정:</strong></label>
+                <input type="number" name="indoor_light" id="indoor_light" min="0" max="1000">
+                <span>lux</span>
+            </div>
+            <div class="form-row">
+                <label><strong>미세먼지 농도 설정:</strong></label>
+                <p>상관없다면 '매우나쁨'을 선택하십시오.</p>
+                <div class="dust-button-container">
+                    <button type="button" class="dust-button" id="dust-btn-1" onclick="selectDustLevel('2')">매우 좋음</button>
+                    <button type="button" class="dust-button" id="dust-btn-2" onclick="selectDustLevel('20')">보통</button>
+                    <button type="button" class="dust-button" id="dust-btn-3" onclick="selectDustLevel('80')">나쁨</button>
+                    <button type="button" class="dust-button" id="dust-btn-4" onclick="selectDustLevel('160')">매우 나쁨</button>
+                </div>
+                <input type="hidden" name="pm" id="pm" value="">
+                <p></p>
+            
+            </div>
+
+            
+            <div class="form-row">
+                <label for="open_time"><strong>PDLC 커튼 열림:</strong></label>
+                <input type="time" name="open_time" id="open_time">
+            </div>
+            <div class="form-row">
+                <label for="close_time"><strong>PDLC 커튼 닫힘:</strong></label>
+                <input type="time" name="close_time" id="close_time">
+            </div>
+            <button type="submit" name="button" value="save">저장</button>
+        </form>
+    </div>
+</body>
+</html>
