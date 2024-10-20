@@ -12,7 +12,7 @@ Servo myservo;          // 서보 모터 객체
 
 // 상수 정의
 #define DHT21_PIN 5   // DHT 21 (AM2302) -내부
-#define DHT21_PIN2 2  // DHT 21 (AM2302) -외부
+#define DHT21_PIN2 3  // DHT 21 (AM2302) -외부
 #define LEDPIN 11     // LED 제어 핀 (PWM 사용)
 #define LIGHTPIN A0   // 조도 센서 입력 핀
 #define RAINPIN A1    // 빗물 감지 센서 입력 핀
@@ -307,20 +307,20 @@ void controlServoBasedOnAverage(float avgTemp, float avgHum, float avgTemp2, flo
 
   if (avgTemp2 > userHot || avgHum2 > userHumi || discomfortIndex2 > discomfortIndex1) {
     //사용자 설정 온도보다 실내 온도가 높거나 설정 습도보다 실내 습도가 높거나 실외 불쾌지수가 실내 불쾌지수보다 낮거나 조건을 하나 이상 충족할 경우
-    //myservo.write(180);  // 서보를 열림 위치로 회전
+   
     Serial.println(5);  //문을 열라는 문자 출력
 
   } else if (avgTemp < userCool || pm25Value > userDust || discomfortIndex2 < discomfortIndex1 || rainValue < 900) {
     //사용자 설정 온도보다 실내온도가 낮거나 설정 미세먼지보다 실외 미세먼지가 높거나 실외 불쾌지수가 실내 불쾌지수보다 높거나 실외 불쾌지수가 70이상이거나 실외 온도가 30이상이거나 실외 습도가 80이상이거나 빗물값이 900이하이거나 미세먼지가 81이상이거나 조건 하나 이상 출족할 경우
-    // myservo.write(0);  // 서보를 닫힘 위치로 회전
+   
     Serial.println(6);    //문을 닫으라는 문자 출력
   } else {                               //위의 경우에 모두 해당하지 않는다면
                                          // myservo.write(90);  // 중립 위치
     Serial.println(7);  //문이 중립이라는 문자 출력
   }
 
-  if (reading > userLight) {              //조도 감지 센서의 입력값이 사용자 설정값보다 큰 경우
-    for (pos = 65; pos >= 0; pos -= 1) {  // 65도에서 0도까지 이동
+  if (reading > 150) {              //조도 감지 센서의 입력값이 사용자 설정값보다 큰 경우
+    for (pos = 130; pos >= 0; pos -= 1) {  // 65도에서 0도까지 이동
       myservo.write(pos);                 // 서보를 'pos' 위치로 이동
       break;                              // 서보가 위치에 도달할 때까지 15ms 대기
     }
@@ -357,7 +357,7 @@ void loop() {                    //계속 반복
   command.trim();                                 //여분의 공백 제거
 
   // 10분 타이머 확인
-  if (now - before >= 60000) {                                             // 10분 = 600,000밀리초
+  if (now - before >= 180000) {                                             // 10분 = 600,000밀리초
    // Serial.println(F("------------10 minutes have passed.------------"));  //10분이 지났다는 문자 출력
     delay(400);
     Serial.print(F("10avg"));
@@ -400,7 +400,7 @@ void loop() {                    //계속 반복
 
 
   // 1분 간격으로 배열에 값 저장
-  if (now - lastSampleTime >= 6000) {      // 1분 = 60,000밀리초
+  if (now - lastSampleTime >= 12000) {      // 1분 = 60,000밀리초
     humValues[currentIndex] = inhum;       // 실외 습도 값 저장
     tempValues[currentIndex] = intemp;     // 실외 온도 값 저장
     hum2Values[currentIndex] = outhum;     // 실내 습도 값 저장
